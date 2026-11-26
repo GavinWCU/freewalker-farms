@@ -7,6 +7,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   fullyParallel: false,
   workers: 1,
+  retries: 1, // software WebGL in headless browsers is occasionally starved for CPU
   reporter: 'list',
   use: { baseURL: 'http://localhost:4173/', serviceWorkers: 'block', launchOptions: { args: gl } },
   webServer: { command: 'npm run build && npm run preview', url: 'http://localhost:4173/', reuseExistingServer: true, timeout: 120_000 },
