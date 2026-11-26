@@ -2,6 +2,7 @@ import * as sim from '../sim';
 import { BASECAMP_NAMES } from '../sim/content/buildings';
 import { btn, download, h, modal, money, pickFile } from './dom';
 import type { Game } from './game';
+import { menuSections } from './registry';
 
 export function openBuildMenu(g: Game) {
   const s = g.s;
@@ -85,4 +86,3 @@ export function openMenu(g: Game) {
   ];
   const m = modal(g.ui, 'Paused', body, () => { g.paused = false; }, 'menu');
 }
-export const menuSections: ((g: Game, close: () => void) => Node[])[] = [];

@@ -43,6 +43,8 @@ export class View {
   private ace: THREE.Object3D;
   private acePos = new THREE.Vector3();
   private cows: Instancer;
+  private solar: Instancer;
+  private tenantCows: { id: number; x: number; y: number }[] = [];
   private selection: THREE.Mesh;
   private ghostObj: THREE.Object3D | null = null;
   private ghostKey = '';
@@ -82,8 +84,9 @@ export class View {
     this.whitePosts = new Instancer(wpost, 4000); this.whiteRails = new Instancer(wrail, 4000);
     const dirt = new THREE.Group(); box(dirt, 0.9, 0.04, 0.9, mat('#ffffff', { map: textures().dirt }), 0, -0.02, 0, false);
     this.dirt = new Instancer(dirt, 2200, { shadows: false });
-    this.cows = new Instancer(buildModel('cow'), 400);
-    for (const i of [this.trees, this.pines, this.rocks, this.signs, this.posts, this.rails, this.whitePosts, this.whiteRails, this.dirt, this.cows]) this.scene.add(i.group);
+    this.cows = new Instancer(buildModel('cow'), 600);
+    this.solar = new Instancer(buildModel('solar_panels'), 400);
+    for (const i of [this.trees, this.pines, this.rocks, this.signs, this.posts, this.rails, this.whitePosts, this.whiteRails, this.dirt, this.cows, this.solar]) this.scene.add(i.group);
 
     this.selection = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.7, 4, 1, Math.PI / 4).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthTest: false }));
     this.selection.renderOrder = 10; this.selection.visible = false;
@@ -312,6 +315,18 @@ export class View {
       (hash2(k, 3, 77) > 0.5 ? this.pines : this.trees).add(px, -0.3, py, k, 1 + hash2(k, 4, 77) * 0.6);
     }
     for (const i of [this.trees, this.pines, this.rocks, this.signs]) i.commit();
+    // Tenants at work: solar arrays and a rancher's cattle.
+    this.solar.reset();
+    this.tenantCows = [];
+    for (const l of s.leases) {
+      if (l.dir !== 'out') continue;
+      for (const i of l.tiles) {
+        const x = i % s.w, y = Math.floor(i / s.w);
+        if (l.tenant === 'solar') this.solar.add(x + 0.5, this.ground(x + 0.5, y + 0.5), y + 0.5, 0, 1.15);
+        if (l.tenant === 'rancher' && hash2(x, y, 8) > 0.3) this.tenantCows.push({ id: i, x: x + 0.5, y: y + 0.5 });
+      }
+    }
+    this.solar.commit();
   }
 
   private syncFences(s: GameState) {
@@ -546,7 +561,7 @@ export class View {
     this.ace.position.copy(this.acePos);
     // Cattle graze around their spot.
     this.cows.reset();
-    for (const c of s.cattle) {
+    for (const c of [...s.cattle, ...this.tenantCows.map((q) => ({ ...q, age: 99 }))]) {
       const t = this.time.value * 0.15 + c.id;
       const x = c.x + Math.sin(t) * 0.25, y = c.y + Math.cos(t * 0.7) * 0.25;
       this.cows.add(x, this.ground(x, y), y, -t, c.age < 9 ? 0.75 : 1);

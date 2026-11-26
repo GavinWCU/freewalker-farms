@@ -3,6 +3,7 @@ import type { SimEvent } from '../sim';
 import { btn, h, money } from './dom';
 import type { Game } from './game';
 import { openBuildMenu } from './panels';
+import { buildingSections, tileSections } from './registry';
 
 const TERRAIN = { crop: 'Cropland', pasture: 'Pasture', timber: 'Timber', water: 'Lake Stillwater', road: 'County road' };
 
@@ -30,8 +31,6 @@ export function tilePanel(g: Game, x: number, y: number): Node[] {
   return out;
 }
 
-/** Later systems (land, leasing, landmarks…) add their sections here. */
-export const tileSections: ((g: Game, i: number) => Node[])[] = [];
 const tileExtras = (g: Game, i: number) => tileSections.flatMap((f) => f(g, i));
 
 function fieldPanel(g: Game, i: number): Node[] {
@@ -85,5 +84,3 @@ function buildingPanel(g: Game, b: sim.Building): Node[] {
   out.push(...buildingSections.flatMap((f) => f(g, b)));
   return out;
 }
-/** Later systems (farm stand, bell, sleep…) add building-specific sections. */
-export const buildingSections: ((g: Game, b: sim.Building) => Node[])[] = [];

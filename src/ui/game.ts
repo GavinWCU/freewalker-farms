@@ -7,6 +7,7 @@ import { btn, h, money } from './dom';
 import { tilePanel } from './tile';
 import { openBuildMenu, openInventory, openMenu } from './panels';
 import { ITEM } from '../sim/content/items';
+import { bubbleSources, eventHandlers, hudItems, tickers, toolbarItems } from './registry';
 
 export type Mode =
   | { kind: 'place'; type: string; at?: { x: number; y: number } }
@@ -108,8 +109,7 @@ export class Game {
   fastForward(minutes: number) { this.handle(sim.advance(this.s, minutes)); this.dirty = true; }
   tileScreen(x: number, y: number) { const p = this.view.toScreen(x + 0.5, this.view.ground(x + 0.5, y + 0.5), y + 0.5); return { x: p.x, y: p.y }; }
 
-  /** Hook for movement (phase 6). */
-  tickInput(_dt: number) {}
+  tickInput(dt: number) { for (const f of tickers) f(this, dt); }
   interact() {}
 
   /** React to sim events: toasts, level-ups, cars at the stand… */
@@ -120,10 +120,9 @@ export class Game {
       else if (e.type === 'toast' && e.text) this.toast(e.text);
       else if (e.type === 'day') this.dirty = true;
       else if (e.type === 'sale' && e.x !== undefined) this.view.spawnCar(e.x);
-      this.onEvent(e);
+      for (const f of eventHandlers) f(this, e);
     }
   }
-  onEvent(_e: SimEvent) {}
 
   // ── actions ───────────────────────────────────────────────────────────────
   /** Applies a sim result: toast it, refresh the world and autosave. */
@@ -257,14 +256,13 @@ export class Game {
       const icon = this.buildingBubble(b);
       if (icon) add(b.x, b.y, icon.icon, icon.tap, `bubble-${b.type}`, 0.75);
     }
-    this.extraBubbles(add);
+    for (const f of bubbleSources) f(this, add);
   }
   buildingBubble(b: GameState['buildings'][number]): { icon: string; tap: () => void } | null {
     const p = sim.BUILDING[b.type].produces;
     if (p && b.ready > 0) return { icon: '✅', tap: () => { const ev: SimEvent[] = []; this.act(sim.collect(this.s, b.id, ev), ev); } };
     return null;
   }
-  extraBubbles(_add: (x: number, y: number, icon: string, onTap: () => void, testid: string, h?: number) => void) {}
   private placeBubbles() {
     for (const b of this.bubbleEls) {
       const p = this.view.toScreen(b.x, this.view.ground(b.x, b.y) + b.h, b.y);
@@ -283,18 +281,18 @@ export class Game {
       h('div.chip', { 'data-testid': 'hud-acres' }, '🗺️', H.acres),
       h('div.chip', { 'data-testid': 'hud-level' }, '⭐', H.level, h('div.xpbar', {}, H.xp)),
       h('div.chip.hide-phone', {}, '🏕️', H.camp),
+      ...hudItems.map((f) => f(this)),
       H.saved,
     );
     const toolbar = h('div.toolbar',
       {},
       h('button.btn', { onclick: () => openBuildMenu(this), 'data-testid': 'btn-build' }, h('b', {}, '🔨'), 'Build'),
       h('button.btn.gold', { onclick: () => openInventory(this), 'data-testid': 'btn-barn' }, h('b', {}, '📦'), 'Sell'),
-      ...this.extraToolbar(),
+      ...toolbarItems.map((f) => f(this)),
       h('button.btn.grey', { onclick: () => openMenu(this), 'data-testid': 'btn-menu' }, h('b', {}, '☰'), 'Menu'),
     );
     this.ui.append(this.bubbles, hud, toolbar, this.toasts);
   }
-  extraToolbar(): HTMLElement[] { return []; }
 
   private hudCache = '';
   private updateHud() {

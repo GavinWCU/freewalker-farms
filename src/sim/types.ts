@@ -55,7 +55,7 @@ export interface Lease {
   ratePerAcre: number;   // $ per acre per season
   startDay: number;
   endDay: number;        // first day the lease is over
-  cut?: number;          // rent multiplier this season (drought etc.)
+  paid?: number;         // seasons of rent paid so far
 }
 
 export interface LeaseOffer { tenant: string; name: string; ratePerAcre: number; seasons: number }

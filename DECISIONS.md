@@ -35,3 +35,11 @@ Choices made while building, so they can be revisited.
 - Saves are the game state as JSON with `saveVersion`; `src/sim/save.ts` holds the migrations. `tests/fixtures/save-v1.json` is a frozen v1 save that must always keep loading.
 - The latest farm resumes automatically behind the title screen; "Continue" is one tap.
 - The service worker is only registered in production builds and is blocked in automated tests.
+
+## Land
+- An acre's price = base by terrain (crop $3,000, pasture $2,200, timber $1,800) × soil quality × 1.5 if lakefront × (1 + 0.4% per acre already bought). Auctions sell a 2–5 acre block for 3 days at 70–85% (a neighbor selling) or 115–135% (a bidding war).
+- Leases run 1, 3 or 5 seasons. The first season's rent is paid when the lease is signed, then at the start of each following season. Lease lengths end on a season boundary.
+- Tenants: crop farmer, cattle rancher, hunting club, solar company. Leased-out land gets a white fence and shows the tenant's crops, cattle or solar panels.
+- Renting a neighbor's field costs 3.5% of its value per acre per season. You can farm it but not build on it; crops still on it when the lease ends go back with the land. Buying land you rent ends the lease.
+- Breaking a lease costs 1.5 seasons of rent (leased out) or 1 season (rented in).
+- Loans: up to 50% of your land's value at 8% a year, interest due on the 1st of each month. A missed payment adds the interest plus a 25% late fee to the balance and freezes new borrowing; three in a row raise the rate by a point. The game never ends.

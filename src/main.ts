@@ -1,5 +1,6 @@
 import './ui/style.css';
 import { CLOSING_LINE, GAME_NAME, SHORT_NAME, TAGLINE } from './config';
+import * as sim from './sim';
 import { newGame, dateLabel, type GameState } from './sim';
 import { IdbBackend, SaveManager, SLOTS } from './save/saves';
 import { Game } from './ui/game';
@@ -17,7 +18,8 @@ function start(s: GameState, slot: number, paused: boolean) {
   game = new Game(app, s, slot, saves);
   game.paused = paused;
   game.onExit = () => showTitle();
-  (window as any).__game = game; // test & debug hook
+  (window as any).__game = game; // test & debug hooks
+  (window as any).__sim = sim;
   return game;
 }
 
