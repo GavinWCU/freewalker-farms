@@ -1,0 +1,26 @@
+{
+  "name": "freewalker-farms",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "typecheck": "tsc",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "screenshots": "playwright test --config playwright.screens.config.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.11",
+    "@types/three": "^0.170.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.4.0",
+    "vitest": "^5.1.2"
+  },
+  "private": true
+}
