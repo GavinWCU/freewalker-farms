@@ -43,3 +43,10 @@ Choices made while building, so they can be revisited.
 - Renting a neighbor's field costs 3.5% of its value per acre per season. You can farm it but not build on it; crops still on it when the lease ends go back with the land. Buying land you rent ends the lease.
 - Breaking a lease costs 1.5 seasons of rent (leased out) or 1 season (rented in).
 - Loans: up to 50% of your land's value at 8% a year, interest due on the 1st of each month. A missed payment adds the interest plus a 25% late fee to the balance and freezes new borrowing; three in a row raise the rate by a point. The game never ends.
+
+## Farm Stand and businesses
+- Shoppers come 8 AM–7 PM. A shopper buys an item with probability `1.4 − 0.8 × (price ÷ fair price)` (clamped 2–97%), so a fair price sells ~60% of the time and double the fair price almost never sells.
+- Stand level 1: 4 kinds × 40 units, ~1.6 shoppers/hour. Level 2 (bigger stand): 6 × 80, ~2.6/hour. Level 3 is the Freewalker Farm Market: 9 × 150, ~4.2/hour, but it runs at 60% without a cashier. The Market makes 6 Freewalker Goods a day ($5 each to make).
+- Workers are paid daily (farmhand $60, cashier $50, ranch hand $40). If wages can't be paid, a worker quits. Hiring unlocks at level 5.
+- Cattle: $900 a calf, ready to sell at 18 days for ~$1,700 (market moves ±25%). Pasture holds one head per 2 open acres plus 4 per corral. Winter hay costs $6/head/day.
+- Income buildings: equipment shed (rental), solar panels, fishing cabins (daily, with occupancy), Buffalo Storage (paid monthly). Ledger shows income by business and expenses for each of the last seasons.

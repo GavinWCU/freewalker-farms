@@ -8,3 +8,4 @@ buildingSections.push((g, b) => {
   return [h('div.row', {}, btn('😴 Sleep until morning', () => { const { r, ev } = sim.sleep(g.s); g.act(r, ev); }, sim.canSleep(g.s) ? 'blue' : 'grey small'))];
 });
 import './land';
+import './business';
