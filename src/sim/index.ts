@@ -12,6 +12,7 @@ export * from './market';
 export * from './save';
 export * from './land';
 export * from './business';
+export * from './explore';
 export { BUILDINGS, BUILDING, BASECAMP_NAMES } from './content/buildings';
 export { CROPS, CROP } from './content/crops';
 export { ITEMS, ITEM } from './content/items';

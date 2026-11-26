@@ -527,15 +527,9 @@ export class View {
       const owned = s.vehicles.includes(k as any);
       obj.visible = owned;
       if (!owned) continue;
-      if (k === v) { obj.position.set(p.x, gy, p.y); obj.rotation.y = this.facing; }
-      else if (!obj.userData.parked) {
-        // parked near the start until first used
-        obj.position.set(p.x + (k === 'truck' ? 0.6 : k === 'tractor' ? -0.6 : 0.3), 0, p.y + 0.5);
-        obj.position.y = this.ground(obj.position.x, obj.position.z);
-        obj.rotation.y = 0;
-        obj.userData.parked = true;
-      }
-      if (k === v) obj.userData.parked = true;
+      if (k === v) { obj.position.set(p.x, gy, p.y); obj.rotation.y = this.facing; continue; }
+      const at = s.parked[k] ?? { x: p.x + 0.6, y: p.y + 0.5 };
+      obj.position.set(at.x, this.ground(at.x, at.y), at.y);
     }
     this.player.visible = v === 'foot' || v === 'atv' || v === 'tractor';
     const seat = v === 'atv' ? 0.08 : v === 'tractor' ? 0.16 : 0;

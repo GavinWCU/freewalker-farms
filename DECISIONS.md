@@ -50,3 +50,12 @@ Choices made while building, so they can be revisited.
 - Workers are paid daily (farmhand $60, cashier $50, ranch hand $40). If wages can't be paid, a worker quits. Hiring unlocks at level 5.
 - Cattle: $900 a calf, ready to sell at 18 days for ~$1,700 (market moves ±25%). Pasture holds one head per 2 open acres plus 4 per corral. Winter hay costs $6/head/day.
 - Income buildings: equipment shed (rental), solar panels, fishing cabins (daily, with occupancy), Buffalo Storage (paid monthly). Ledger shows income by business and expenses for each of the last seasons.
+
+## Vehicles, Ace, fishing, events
+- Speeds (tiles/second): on foot 1.6, truck 3.6 (×1.5 on gravel/road, ×0.5 in timber), ATV 3 (×1.5 on trails), tractor 1.5. Nothing drives into the lake; docks reach out over it. Idle vehicles stay where you parked them and you walk over to switch.
+- The tractor works each field tile it drives onto in its current mode (harvest / till / water / plant a crop). The mode button cycles through them.
+- The ATV costs $2,500 (Menu → Garage).
+- Ace follows you, rides in the truck bed, and in daytime may dig up a treasure you're within 3 tiles of, or a small find anywhere. 24 hidden finds per world; walk over one to find it. Finds appear as 🎁 bubbles to collect.
+- Fishing: tap your shore or dock → a timing mini-game; better timing = better odds and bigger fish. Eight species; walleye, wipers and pike prefer the dock, catfish bite at night. The lake is iced over in winter. Personal records are in the Journal.
+- Random events: storms knock back growing crops, summer droughts (no rain, slower growth unwatered, lower tenant rent), bumper crops (+50% yield for 4 days), cash opportunities and market spikes.
+- **Save format v2** adds parked vehicle spots, pending finds and hidden spots; the v1 → v2 migration fills them in for old saves.

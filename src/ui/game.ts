@@ -36,7 +36,7 @@ export class Game {
   private toasts = h('div.toasts');
   private bubbles = h('div.bubbles');
   private bubbleEls: { el: HTMLElement; x: number; y: number; h: number }[] = [];
-  private keys = new Set<string>();
+  keys = new Set<string>();
   stick = { x: 0, y: 0 };
   onExit: () => void = () => {};
 
@@ -110,7 +110,7 @@ export class Game {
   tileScreen(x: number, y: number) { const p = this.view.toScreen(x + 0.5, this.view.ground(x + 0.5, y + 0.5), y + 0.5); return { x: p.x, y: p.y }; }
 
   tickInput(dt: number) { for (const f of tickers) f(this, dt); }
-  interact() {}
+  interact() { const p = this.s.player; this.openTile({ x: Math.floor(p.x), y: Math.floor(p.y) }); }
 
   /** React to sim events: toasts, level-ups, cars at the stand… */
   handle(ev: SimEvent[]) {

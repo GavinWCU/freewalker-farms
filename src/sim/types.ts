@@ -103,6 +103,8 @@ export interface GameState {
   vehicles: Vehicle[];                     // owned
   fishing: { records: Record<string, number>; caught: number };
   spots: Spot[];
+  gifts: { x: number; y: number; item: string; value: number }[]; // finds waiting to be collected (v2)
+  parked: Record<string, { x: number; y: number }>;                  // where idle vehicles sit (v2)
   upgrades: string[];                      // workshop / lab research
   achievements: string[];
   bell: string[];                          // milestones waiting for the bell

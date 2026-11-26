@@ -78,6 +78,7 @@ describe('leasing out', () => {
   });
   it('pays rent every season for the length of the lease, then ends', () => {
     const s = newGame(4);
+    s.flags.calm = 1;
     s.time.day = 1; // first day of spring
     const tiles = [at(s, 0, 0), at(s, 1, 0)];
     const m0 = s.money;
@@ -139,6 +140,7 @@ describe('loans', () => {
   });
   it('missing a payment adds a late fee but never ends the game', () => {
     const s = newGame(8);
+    s.flags.calm = 1;
     borrow(s, 30000);
     s.money = 0;
     advance(s, 1440 * DAYS_PER_MONTH * 4);
