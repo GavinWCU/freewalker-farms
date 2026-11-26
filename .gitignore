@@ -2,7 +2,6 @@ node_modules
 dist
 test-results
 playwright-report
-.claude/
 PROMPT.md
 *.log
 .DS_Store
