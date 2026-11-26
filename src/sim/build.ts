@@ -167,6 +167,7 @@ hooks.day.push((s) => {
     let amt = inc.perDay * b.level;
     if (b.type === 'guest_cabin') amt *= (chance(s, 0.75) ? 1 : 0.4) * extras;
     if (b.type === 'equipment_shed') amt *= chance(s, 0.6) ? 1 : 0.3;
+    if (b.type === 'solar_panels' && s.upgrades.includes('solar_grid')) amt *= 1.5;
     earn(s, Math.round(amt), inc.business);
   }
 });

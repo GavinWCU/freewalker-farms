@@ -56,7 +56,7 @@ export function customersPerHour(s: GameState) {
   const base = [0, 1.6, 2.6, 4.2][b.level];
   const weather = { sunny: 1, cloudy: 0.9, rain: 0.6, storm: 0.3, snow: 0.5 }[s.weather];
   const cashier = s.workers.cashier > 0 ? 1.3 : isMarket(s) ? 0.6 : 1;
-  const extras = 1 + countBuilding(s, 'landscaping') * 0.1 + (hasBuilding(s, 'farm_sign') ? 0.1 : 0);
+  const extras = 1 + countBuilding(s, 'landscaping') * 0.1 + (hasBuilding(s, 'farm_sign') ? 0.1 : 0) + (s.upgrades.includes('stand_sign') ? 0.25 : 0);
   return base * weather * cashier * extras;
 }
 

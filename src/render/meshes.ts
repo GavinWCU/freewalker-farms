@@ -501,6 +501,23 @@ function car(color = '#e8b23a') {
   for (const x of [-0.11, 0.11]) for (const z of [-0.08, 0.08]) wheel(g, 0.04, 0.025, x, 0.04, z);
   return g;
 }
+export function trailSign(text: string) {
+  const g = new THREE.Group();
+  cyl(g, 0.02, 0.025, 0.32, '#6b4426', -0.14, 0, 0);
+  cyl(g, 0.02, 0.025, 0.32, '#6b4426', 0.14, 0, 0);
+  box(g, 0.36, 0.11, 0.025, textBoard([text], 0.36, 0.11, '#7a4f2a', '#ffe9b0'), 0, 0.18, 0, false);
+  return g;
+}
+function ridgeMarker() {
+  const g = new THREE.Group();
+  ball(g, 0.1, '#9aa0a6', 0, 0.05, 0, 0).scale.set(1.2, 0.7, 1.1);
+  ball(g, 0.07, '#b4b9bd', 0.02, 0.13, 0, 0);
+  ball(g, 0.045, '#8f969c', 0, 0.2, 0.01, 0);
+  cyl(g, 0.008, 0.008, 0.3, '#6b4426', 0.12, 0, 0.05);
+  box(g, 0.1, 0.06, 0.005, '#d63c3c', 0.17, 0.24, 0.05, false);
+  g.add(at(trailSign('BUFFALO RIDGE'), -0.1, 0, 0.25));
+  return g;
+}
 function powerPole() {
   const g = new THREE.Group();
   cyl(g, 0.018, 0.022, 0.9, '#7a5a3c');
@@ -547,6 +564,8 @@ export const MODELS: ModelDef[] = [
   { id: 'boulder', name: 'Boulder', group: 'Nature', build: boulder },
   { id: 'sale_sign', name: 'For Sale Sign', group: 'Nature', build: saleSign },
   { id: 'power_pole', name: 'Power Pole', group: 'Nature', build: powerPole },
+  { id: 'ridge_marker', name: 'Buffalo Ridge Cairn', group: 'Nature', build: ridgeMarker },
+  { id: 'loop_sign', name: "Leonard's Loop Sign", group: 'Nature', build: () => trailSign("LEONARD'S LOOP") },
   { id: 'farmer', name: 'Farmer (you)', group: 'Characters', build: farmer },
   { id: 'ace', name: 'Ace', group: 'Characters', build: dog },
   { id: 'cow', name: 'Cow', group: 'Characters', build: cow },

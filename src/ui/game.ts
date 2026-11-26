@@ -35,6 +35,7 @@ export class Game {
   private banner: HTMLElement | null = null;
   private toasts = h('div.toasts');
   private bubbles = h('div.bubbles');
+  private tint = h('div.tint');
   private bubbleEls: { el: HTMLElement; x: number; y: number; h: number }[] = [];
   keys = new Set<string>();
   stick = { x: 0, y: 0 };
@@ -102,6 +103,7 @@ export class Game {
     this.view.frame(this.s, dt);
     this.updateHud();
     this.placeBubbles();
+    this.updateTint();
     this.raf = requestAnimationFrame(this.loop);
   };
 
@@ -129,7 +131,7 @@ export class Game {
   act(r: sim.Result, ev: SimEvent[] = []) {
     this.handle(ev);
     if (r.msg) this.toast(r.msg, r.ok ? '' : 'bad');
-    if (r.ok) { this.dirty = true; this.scheduleSave(); }
+    if (r.ok) { this.dirty = true; this.scheduleSave(); this.handle(sim.checkMilestones(this.s)); }
     return r.ok;
   }
 
@@ -181,6 +183,7 @@ export class Game {
     }
     if (phase === 'end') {
       if (this.drawn.size) this.toast(`Updated ${this.drawn.size} tiles`);
+      this.handle(sim.checkLoops(this.s));
       this.scheduleSave();
     }
   }
@@ -291,9 +294,17 @@ export class Game {
       ...toolbarItems.map((f) => f(this)),
       h('button.btn.grey', { onclick: () => openMenu(this), 'data-testid': 'btn-menu' }, h('b', {}, '☰'), 'Menu'),
     );
-    this.ui.append(this.bubbles, hud, toolbar, this.toasts);
+    this.ui.append(this.tint, this.bubbles, hud, toolbar, this.toasts);
   }
 
+  /** Warm Golden Hour glow in the evening, blue at night. */
+  private updateTint() {
+    const m = this.s.time.minute, hr = m / 60;
+    const golden = hr >= 17.5 && hr < 20.5 ? Math.sin(((hr - 17.5) / 3) * Math.PI) : 0;
+    const night = hr >= 20.5 || hr < 5 ? 1 : hr < 6.5 ? (6.5 - hr) / 1.5 : hr > 20 ? (hr - 20) * 2 : 0;
+    const bg = golden > night ? `rgba(255,140,40,${(golden * 0.22).toFixed(3)})` : `rgba(20,30,90,${(Math.min(1, night) * 0.38).toFixed(3)})`;
+    if (this.tint.style.background !== bg) this.tint.style.background = bg;
+  }
   private hudCache = '';
   private updateHud() {
     const s = this.s, H = this.hud;

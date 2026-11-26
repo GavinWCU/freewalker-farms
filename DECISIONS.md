@@ -59,3 +59,13 @@ Choices made while building, so they can be revisited.
 - Fishing: tap your shore or dock → a timing mini-game; better timing = better odds and bigger fish. Eight species; walleye, wipers and pike prefer the dock, catfish bite at night. The lake is iced over in winter. Personal records are in the Journal.
 - Random events: storms knock back growing crops, summer droughts (no rain, slower growth unwatered, lower tenant rent), bumper crops (+50% yield for 4 days), cash opportunities and market spikes.
 - **Save format v2** adds parked vehicle spots, pending finds and hidden spots; the v1 → v2 migration fills them in for old saves.
+
+## Levels, landmarks and Golden Hour
+- XP to reach level L = 100 × (L−1)^1.75 (level 5 ≈ 1,100 XP, level 10 ≈ 4,700, level 20 ≈ 17,200). After 20, every 5,000 XP earns a prestige star; nothing ever ends.
+- Basecamp level comes from key buildings: Shipping Container (1), Cabin (2), Black Barn (3), Dream Farmhouse (4).
+- **Leonard's Loop**: the first closed loop of ATV trail you draw is named for Grandpa and gets a sign. The second loop is the **Golden Hour Loop**. Riding a trail at Golden Hour gives a daily bonus.
+- **Sentinel Tree**: visiting it in all four seasons, and at Golden Hour, unlocks achievements. **Buffalo Ridge**: "Take in the view" zooms the camera out over the whole farm, once-a-day XP.
+- **The Bell Post**: major milestones queue up a 🔔 bubble on the post; tap it to ring (a three-note chime) for bonus XP.
+- **Gavin's Workshop** sells automation (sprinklers, auto-collector, road sign, battery bank). **Paige's Engineering Lab** unlocks the big tractor, combine, scouting drone and level-3 building upgrades.
+- **Golden Hour** (6–8 PM) warms the sun and sky, adds a soft orange screen glow and shows a ✨ badge; night tints blue.
+- Roads and trails are drawn as paths through the middle of a tile, joining neighbors.

@@ -4,7 +4,7 @@ import { CROP } from '../sim/content/crops';
 import { daylight, isGoldenHour, seasonOf } from '../sim/time';
 import { COUNTY_ROAD_Y } from '../sim/map/home80';
 import { hash2 } from '../sim/rng';
-import { buildModel, carModel, box, cyl, mat } from './meshes';
+import { buildModel, carModel, box, cone, cyl, mat, trailSign } from './meshes';
 import { Instancer } from './instancer';
 import { textures } from './textures';
 
@@ -35,6 +35,8 @@ export class View {
   private trees: Instancer; private pines: Instancer; private rocks: Instancer; private signs: Instancer;
   private posts: Instancer; private rails: Instancer; private whiteRails: Instancer; private whitePosts: Instancer;
   private dirt: Instancer;
+  private gravel: Instancer;
+  private trail: Instancer;
   private crops = new Map<string, Instancer>();
   private buildings = new Map<number, { obj: THREE.Object3D; key: string }>();
   private static = new THREE.Group();
@@ -84,9 +86,12 @@ export class View {
     this.whitePosts = new Instancer(wpost, 4000); this.whiteRails = new Instancer(wrail, 4000);
     const dirt = new THREE.Group(); box(dirt, 0.9, 0.04, 0.9, mat('#ffffff', { map: textures().dirt }), 0, -0.02, 0, false);
     this.dirt = new Instancer(dirt, 2200, { shadows: false });
+    const strip = (c: string) => { const g = new THREE.Group(); box(g, 1, 0.03, 1, c, 0, -0.01, 0, false); return g; };
+    this.gravel = new Instancer(strip('#e4d2a2'), 6000, { shadows: false });
+    this.trail = new Instancer(strip('#c79a5e'), 6000, { shadows: false });
     this.cows = new Instancer(buildModel('cow'), 600);
     this.solar = new Instancer(buildModel('solar_panels'), 400);
-    for (const i of [this.trees, this.pines, this.rocks, this.signs, this.posts, this.rails, this.whitePosts, this.whiteRails, this.dirt, this.cows, this.solar]) this.scene.add(i.group);
+    for (const i of [this.trees, this.pines, this.rocks, this.signs, this.posts, this.rails, this.whitePosts, this.whiteRails, this.dirt, this.cows, this.solar, this.gravel, this.trail]) this.scene.add(i.group);
 
     this.selection = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.7, 4, 1, Math.PI / 4).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthTest: false }));
     this.selection.renderOrder = 10; this.selection.visible = false;
@@ -180,6 +185,49 @@ export class View {
     this.syncFences(s);
     this.syncCrops(s);
     this.syncBuildings(s);
+    this.syncLoopSigns(s);
+    this.syncPaths(s);
+  }
+
+  /** Roads and trails: a pad in the tile centre with arms to connected neighbors. */
+  private syncPaths(s: GameState) {
+    this.gravel.reset(); this.trail.reset();
+    s.tiles.forEach((t, i) => {
+      if (!t.path) return;
+      const x = i % s.w, y = Math.floor(i / s.w);
+      const inst = t.path === 'gravel' ? this.gravel : this.trail;
+      const wdt = t.path === 'gravel' ? 0.34 : 0.2;
+      const seg = (ax: number, ay: number, bx: number, by: number) => {
+        const cx = (ax + bx) / 2, cy = (ay + by) / 2;
+        const sx = Math.abs(bx - ax) + wdt, sy = Math.abs(by - ay) + wdt;
+        inst.addBox(cx, this.ground(cx, cy) + 0.012, cy, sx, sy);
+      };
+      seg(x + 0.5, y + 0.5, x + 0.5, y + 0.5);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= s.w || ny >= s.h) continue;
+        const n = s.tiles[ny * s.w + nx];
+        if (n.path || n.t === 'road') seg(x + 0.5, y + 0.5, x + 0.5 + dx * 0.5, y + 0.5 + dy * 0.5);
+      }
+    });
+    this.gravel.commit(); this.trail.commit();
+  }
+
+  private loopSigns: THREE.Object3D[] = [];
+  private loopKey = '';
+  private syncLoopSigns(s: GameState) {
+    const key = `${s.flags.leonardTile}|${s.flags.goldenTile}`;
+    if (key === this.loopKey) return;
+    this.loopKey = key;
+    for (const o of this.loopSigns) this.scene.remove(o);
+    this.loopSigns = [];
+    for (const [k, text] of [['leonardTile', "LEONARD'S LOOP"], ['goldenTile', 'GOLDEN HOUR LOOP']] as const) {
+      const i = s.flags[k];
+      if (i === undefined) continue;
+      const x = i % s.w, y = Math.floor(i / s.w), o = trailSign(text);
+      o.position.set(x + 0.2, this.ground(x + 0.2, y + 0.2), y + 0.2); o.rotation.y = Math.PI / 4;
+      this.scene.add(o); this.loopSigns.push(o);
+    }
   }
 
   private buildStatic(s: GameState) {
@@ -249,11 +297,15 @@ export class View {
         this.sentinel.position.set(x + 0.5, this.ground(x + 0.5, y + 0.5), y + 0.5);
         this.landmarkObjs.add(this.sentinel);
       }
+      if (t.landmark === 'ridge') {
+        const x = i % s.w, y = Math.floor(i / s.w), m = buildModel('ridge_marker');
+        m.position.set(x + 0.5, this.ground(x + 0.5, y + 0.5), y + 0.5); m.rotation.y = Math.PI / 4;
+        this.landmarkObjs.add(m);
+      }
     });
   }
 
   private tileColor(s: GameState, t: Tile): THREE.Color {
-    if (t.path) return COLORS[t.path];
     if (t.t === 'water') return COLORS.water;
     if (t.t === 'road') return COLORS.road;
     const base = t.owned ? (COLORS as any)[t.t] as THREE.Color : t.t === 'crop' ? COLORS.nbCrop : t.t === 'pasture' ? COLORS.nbPasture : COLORS.timber;
@@ -271,7 +323,7 @@ export class View {
       const c = this.tileColor(s, t);
       const jitter = 0.94 + hash2(x, y, 5) * 0.08;
       [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy], k) => {
-        const cc = t.t !== 'water' && !t.path && sandCorner(x + dx, y + dy) ? COLORS.sand : c;
+        const cc = t.t !== 'water' && sandCorner(x + dx, y + dy) ? COLORS.sand : c;
         col.setXYZ(i * 4 + k, cc.r * jitter, cc.g * jitter, cc.b * jitter);
       });
     }
@@ -367,7 +419,7 @@ export class View {
       const def = CROP[id];
       const g = new THREE.Group();
       const m = mat('#ffffff');
-      if (def.shape === 'tall') { cyl(g, 0.012, 0.02, 0.22, m, 0, 0, 0, 5); }
+      if (def.shape === 'tall') { cyl(g, 0.03, 0.045, 0.24, m, 0, 0, 0, 6); cone(g, 0.05, 0.1, m, 0, 0.2, 0, 6); }
       else if (def.shape === 'clump') box(g, 0.16, 0.1, 0.06, m, 0, 0, 0);
       else if (def.shape === 'bush') { const b = cyl(g, 0.05, 0.06, 0.08, m, 0, 0, 0, 6); b.scale.set(1, 1, 1); }
       else if (def.shape === 'flower') { cyl(g, 0.008, 0.008, 0.18, m, 0, 0, 0, 4); const f = cyl(g, 0.035, 0.035, 0.015, m, 0, 0.18, 0, 8); f.rotation.x = 0.5; }

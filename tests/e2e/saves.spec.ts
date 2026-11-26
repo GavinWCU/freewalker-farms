@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { buildAt, expect, game, home, newFarm, saveNow, tapTile, test } from './helpers';
 
 test('new game, build a container, farm a field, and Continue restores it exactly', async ({ page }) => {
@@ -61,12 +61,17 @@ test('export then import a save', async ({ page, browser }) => {
   const text = readFileSync(path!, 'utf8');
   expect(JSON.parse(text).farmName).toBe('Export Farm');
   // Import it on "another device": a fresh browser profile.
+  const copy = test.info().outputPath('export.json');
+  writeFileSync(copy, text);
+  await page.close(); // free the CPU for the second "device"
   const other = await (await browser.newContext({ serviceWorkers: 'block' })).newPage();
+  other.on('dialog', (d) => { console.log('DIALOG', d.message()); d.dismiss(); });
+  other.on('pageerror', (e) => console.log('PAGEERR', e.message));
   await other.addInitScript(() => localStorage.setItem('ff-low', '1'));
   await other.goto('http://localhost:4173/');
   const chooser = other.waitForEvent('filechooser');
   await other.getByTestId('title-import').click();
-  await (await chooser).setFiles(path!);
+  await (await chooser).setFiles(copy);
   await expect(other.getByTestId('continue')).toContainText('Export Farm');
   await other.getByTestId('continue').click();
   expect(await game(other, 's.money')).toBe(4321);

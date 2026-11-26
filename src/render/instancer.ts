@@ -32,6 +32,13 @@ export class Instancer {
     }
     this.count++;
   }
+  /** A flat box stretched to sx × sz on the ground. */
+  addBox(x: number, y: number, z: number, sx: number, sz: number) {
+    if (this.count >= this.capacity) return;
+    const base = new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(sx, 1, sz));
+    for (const p of this.parts) p.mesh.setMatrixAt(this.count, this.m.multiplyMatrices(base, p.local));
+    this.count++;
+  }
   /** Rail-style instance: stretched along local x between two points. */
   addSpan(ax: number, ay: number, az: number, bx: number, by: number, bz: number) {
     if (this.count >= this.capacity) return;

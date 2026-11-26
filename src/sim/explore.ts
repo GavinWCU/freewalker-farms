@@ -207,7 +207,7 @@ hooks.day.push((s, ev) => {
   const active = (k: string) => s.events.some((e) => e.kind === k && e.until > s.time.day);
   if (s.weather === 'storm') {
     let hit = 0;
-    for (const t of s.tiles) if (t.f?.crop && t.f.growth < 1 && chance(s, 0.15)) { t.f.growth = Math.max(0, t.f.growth - 0.25); hit++; }
+    for (const t of s.tiles) if (t.f?.crop && t.f.growth < 1 && chance(s, 0.15)) { t.f.growth = Math.max(0, t.f.growth - (s.upgrades.includes('drone') ? 0.12 : 0.25)); hit++; }
     ev.push({ type: 'toast', text: `⛈️ Storm! ${hit ? `${hit} acres of crops were knocked back` : 'Your crops rode it out'}` });
   }
   if (season === 1 && !active('drought') && chance(s, 0.05)) {

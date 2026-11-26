@@ -13,6 +13,7 @@ export * from './save';
 export * from './land';
 export * from './business';
 export * from './explore';
+export * from './legacy';
 export { BUILDINGS, BUILDING, BASECAMP_NAMES } from './content/buildings';
 export { CROPS, CROP } from './content/crops';
 export { ITEMS, ITEM } from './content/items';
