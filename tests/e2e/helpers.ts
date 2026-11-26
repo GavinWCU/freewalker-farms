@@ -13,12 +13,18 @@ export const HOME = { x: 19, y: 13 }; // world tile of the home 80's top-left (s
 export const home = (col: number, row: number) => ({ x: HOME.x + col, y: HOME.y + row });
 
 export async function newFarm(page: Page, name = 'E2E Farm') {
-  page.on('dialog', (d) => d.accept(d.type() === 'prompt' ? name : undefined));
   await page.goto('/');
   await page.getByTestId('new-0').click();
+  await nameFarm(page, name);
   await expect(page.getByTestId('title')).toHaveCount(0);
   await page.waitForFunction(() => (window as any).__game?.saveCount > 0);
   await page.getByTestId('tutorial-skip').click();
+}
+
+/** Fills in the in-game "Name your farm" dialog. */
+export async function nameFarm(page: Page, name: string) {
+  await page.getByTestId('ask-input').fill(name);
+  await page.getByTestId('ask-ok').click();
 }
 
 /** Taps the centre of a world tile, after making sure it is on screen. */

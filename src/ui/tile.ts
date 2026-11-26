@@ -1,6 +1,6 @@
 import * as sim from '../sim';
 import type { SimEvent } from '../sim';
-import { btn, h, money } from './dom';
+import { askYes, btn, h, money } from './dom';
 import type { Game } from './game';
 import { openBuildMenu } from './panels';
 import { buildingSections, tileSections } from './registry';
@@ -79,7 +79,7 @@ function buildingPanel(g: Game, b: sim.Building): Node[] {
   const up = sim.upgradeInfo(s, b);
   if (up) row.append(btn(`⬆️ Upgrade ${money(up.cost)}${up.need ? ` · needs ${up.need}` : ''}`, () => g.act(sim.upgrade(s, b.id)), up.need ? 'small grey' : 'small', { 'data-testid': 'act-upgrade' }));
   row.append(btn('✋ Move', () => g.setMode({ kind: 'move', id: b.id }), 'small blue'));
-  row.append(btn('🗑️ Remove', () => { if (confirm(`Remove ${name}? You get back a third of its cost.`)) g.act(sim.demolish(s, b.id)); }, 'small red'));
+  row.append(btn('🗑️ Remove', async () => { if (await askYes(`Remove ${name}? You get back a third of its cost.`, 'Remove')) g.act(sim.demolish(s, b.id)); }, 'small red'));
   out.push(row);
   out.push(...buildingSections.flatMap((f) => f(g, b)));
   return out;

@@ -1,6 +1,6 @@
 import * as sim from '../sim';
 import type { SimEvent } from '../sim';
-import { btn, h, modal, money } from './dom';
+import { askYes, btn, h, modal, money } from './dom';
 import type { Game } from './game';
 import { bubbleSources, tileSections, toolbarItems } from './registry';
 
@@ -15,7 +15,7 @@ tileSections.push((g, i) => {
   if (lease) {
     const who = lease.dir === 'out' ? `${sim.TENANTS[lease.tenant]?.icon ?? ''} Leased to ${lease.name} (${sim.TENANTS[lease.tenant]?.name ?? 'tenant'})` : `📜 You rent this from ${lease.name}`;
     out.push(h('p', { 'data-testid': 'lease-info' }, who), h('p.muted', {}, `${lease.tiles.length} acres · ${money(lease.ratePerAcre)}/acre/season · ends ${dateOf(lease.endDay)}`));
-    out.push(h('div.row', {}, btn(`Break lease (${money(sim.breakPenalty(s, lease))} penalty)`, () => { if (confirm('End this lease early and pay the penalty?')) g.act(sim.breakLease(s, lease.id)); }, 'small red', { 'data-testid': 'break-lease' })));
+    out.push(h('div.row', {}, btn(`Break lease (${money(sim.breakPenalty(s, lease))} penalty)`, async () => { if (await askYes('End this lease early and pay the penalty?', 'End lease')) g.act(sim.breakLease(s, lease.id)); }, 'small red', { 'data-testid': 'break-lease' })));
   }
   if (!t.owned && !lease) {
     if (sim.isBuyable(s, i)) {

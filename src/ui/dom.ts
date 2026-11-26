@@ -38,3 +38,29 @@ export function pickFile(): Promise<string | null> {
     i.click();
   });
 }
+
+/**
+ * In-game stand-in for prompt/confirm/alert, which some browsers block (in-app panes, home-screen web apps).
+ * Resolves to the typed text (or '' when there is no input) on OK, and null on Cancel / close.
+ */
+export function ask(message: string, o: { title?: string; value?: string; ok?: string; cancel?: string | false } = {}): Promise<string | null> {
+  return new Promise((res) => {
+    const root = document.getElementById('app') ?? document.body;
+    let done = false;
+    const finish = (v: string | null) => { if (done) return; done = true; m.close(); res(v); };
+    const input = o.value !== undefined ? h('input.ask-input', { value: o.value, maxlength: 40, 'data-testid': 'ask-input' }) as HTMLInputElement : null;
+    input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') finish(input.value); if (e.key === 'Escape') finish(null); });
+    const m = modal(root, o.title ?? '', [
+      h('p', {}, message),
+      ...(input ? [input] : []),
+      h('div.row', {},
+        o.cancel === false ? '' : btn(o.cancel ?? 'Cancel', () => finish(null), 'small', { 'data-testid': 'ask-cancel' }),
+        btn(o.ok ?? 'OK', () => finish(input ? input.value : ''), 'small gold', { 'data-testid': 'ask-ok' })),
+    ], () => { if (!done) { done = true; res(null); } }, 'ask');
+    m.bg.classList.add('ask-bg');
+    m.box.style.width = 'min(420px, 100%)';
+    setTimeout(() => { input?.focus(); input?.select(); }, 0);
+  });
+}
+export const askYes = async (message: string, ok = 'Yes') => (await ask(message, { ok })) !== null;
+export const tell = (message: string) => ask(message, { cancel: false }).then(() => {});

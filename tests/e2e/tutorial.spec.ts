@@ -1,9 +1,9 @@
-import { expect, test } from './helpers';
+import { expect, nameFarm, test } from './helpers';
 
 test('a new farm walks through the beginner tutorial', async ({ page }) => {
-  page.on('dialog', (d) => d.accept('Tutorial Farm'));
   await page.goto('/');
   await page.getByTestId('new-0').click();
+  await nameFarm(page, 'Tutorial Farm');
   const tut = page.getByTestId('tutorial');
   await expect(tut).toContainText('Welcome to the 80');
   await page.getByTestId('tutorial-next').click();

@@ -4,7 +4,7 @@ import * as sim from './sim';
 import { newGame, dateLabel, type GameState } from './sim';
 import { IdbBackend, SaveManager, SLOTS } from './save/saves';
 import { Game } from './ui/game';
-import { btn, h, money, pickFile } from './ui/dom';
+import { ask, askYes, btn, h, money, pickFile, tell } from './ui/dom';
 import './ui/features';
 
 document.title = GAME_NAME;
@@ -53,12 +53,12 @@ async function showTitle() {
         const r = (await saves.load(slot))!;
         start(r.state, slot, false);
         if (r.fellBack) game!.toast('Your newest save could not be read — loaded the previous autosave.', 'bad');
-      } catch (e) { alert((e as Error).message); return; }
+      } catch (e) { await tell((e as Error).message); return; }
     }
     game!.paused = false; close(); maybeTip();
   };
   const fresh = async (slot: number) => {
-    const name = prompt('Name your farm:', SHORT_NAME)?.trim();
+    const name = (await ask('Name your farm:', { title: '🌾 New farm', value: SHORT_NAME, ok: 'Start farming' }))?.trim();
     if (!name) return;
     const s = newGame((Date.now() % 1_000_000) + slot * 7919, name.slice(0, 40));
     start(s, slot, false);
@@ -77,16 +77,16 @@ async function showTitle() {
     h('div.slots', {}, ...list.map((m, i) => h('div.slot', { 'data-testid': `slot-${i}` },
       h('div.info', {}, m ? [h('b', {}, m.farmName), h('div.muted', {}, `${dateLabel(m.day)} · ${money(m.money)} · ${m.acres} acres`)] : [h('b', {}, `Empty slot ${i + 1}`), h('div.muted', {}, 'Start a new farm here')]),
       m ? btn('Play', () => play(i), 'small') : btn('New Game', () => fresh(i), 'small gold', { 'data-testid': `new-${i}` }),
-      m ? btn('🗑', async () => { if (confirm(`Delete ${m.farmName}? This cannot be undone.`)) { await saves.remove(i); if (game?.slot === i) game = (game.destroy(), null); el.remove(); showTitle(); } }, 'small red', { 'aria-label': 'Delete' }) : '',
+      m ? btn('🗑', async () => { if (await askYes(`Delete ${m.farmName}? This cannot be undone.`, 'Delete')) { await saves.remove(i); if (game?.slot === i) game = (game.destroy(), null); el.remove(); showTitle(); } }, 'small red', { 'aria-label': 'Delete' }) : '',
     ))),
     h('div.row', {},
       btn('⬆️ Import save', async () => {
         const text = await pickFile(); if (!text) return;
         const slot = list.findIndex((m) => !m);
-        const target = slot >= 0 ? slot : Number(prompt(`All slots are full. Overwrite which slot (1-${SLOTS})?`)) - 1;
+        const target = slot >= 0 ? slot : Number(await ask(`All slots are full. Overwrite which slot (1-${SLOTS})?`, { value: '' })) - 1;
         if (!(target >= 0 && target < SLOTS)) return;
         try { await saves.save(target, saves.importJson(text)); el.remove(); game?.destroy(); game = null; showTitle(); }
-        catch (e) { alert(`Couldn't import: ${(e as Error).message}`); }
+        catch (e) { await tell(`Couldn't import: ${(e as Error).message}`); }
       }, 'small blue', { 'data-testid': 'title-import' }),
     ),
     h('div.sub', { style: 'font-size:20px;margin-top:6px' }, CLOSING_LINE),

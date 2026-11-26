@@ -39,17 +39,18 @@ async function midGame(page: Page, minute: number) {
   }, minute);
 }
 
-async function start(page: Page, name: string) {
-  page.on('dialog', (d) => d.accept(name));
+async function start(page: Page) {
   await page.goto('/');
   await page.waitForTimeout(1500);
 }
 
 test('capture screenshots', async ({ page }) => {
   mkdirSync(OUT, { recursive: true });
-  await start(page, 'Freewalker Farms');
+  await start(page);
   await snap(page, '01-title.png', 'Title screen', 'Continue / New Game slots, tagline and closing line.');
   await page.getByTestId('new-0').click();
+  await page.getByTestId('ask-input').fill('Freewalker Farms');
+  await page.getByTestId('ask-ok').click();
   await page.waitForTimeout(800);
   await page.evaluate(() => { const g = (window as any).__game; g.s.time.minute = 9 * 60; g.paused = true; g.view.focus(23.5, 16.5); });
   await snap(page, '02-start.png', 'Day one on the 80', 'The inherited 80 acres, Ace, the pickup and the small tractor, with the tutorial card.');
