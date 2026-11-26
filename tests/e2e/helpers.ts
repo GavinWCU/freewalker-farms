@@ -18,6 +18,7 @@ export async function newFarm(page: Page, name = 'E2E Farm') {
   await page.getByTestId('new-0').click();
   await expect(page.getByTestId('title')).toHaveCount(0);
   await page.waitForFunction(() => (window as any).__game?.saveCount > 0);
+  await page.getByTestId('tutorial-skip').click();
 }
 
 /** Taps the centre of a world tile, after making sure it is on screen. */

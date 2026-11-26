@@ -69,3 +69,6 @@ Choices made while building, so they can be revisited.
 - **Gavin's Workshop** sells automation (sprinklers, auto-collector, road sign, battery bank). **Paige's Engineering Lab** unlocks the big tractor, combine, scouting drone and level-3 building upgrades.
 - **Golden Hour** (6–8 PM) warms the sun and sky, adds a soft orange screen glow and shows a ✨ badge; night tints blue.
 - Roads and trails are drawn as paths through the middle of a tile, joining neighbors.
+
+## Tutorial
+- A new farm starts an 8-step guided tour in a card under the HUD: look around, till, plant, build the container, drive, bubbles, buying land, ledger and saving. Steps that ask you to do something advance by themselves once you do it; the rest have Next. Skip any time; Menu → "Replay the tutorial" restarts it. Progress is saved with the farm. Farms that existed before the tutorial start with it finished.
