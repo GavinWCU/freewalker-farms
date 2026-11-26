@@ -79,6 +79,7 @@ export function earn(s: GameState, amount: number, business: string) {
 export function spend(s: GameState, amount: number, category: string): boolean {
   if (amount > s.money + 1e-9) return false;
   s.money = round2(s.money - amount);
+  s.stats.spent = round2((s.stats.spent ?? 0) + amount);
   const l = ledgerNow(s);
   l.expense[category] = round2((l.expense[category] ?? 0) + amount);
   return true;

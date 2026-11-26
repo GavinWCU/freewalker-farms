@@ -252,7 +252,10 @@ export class Game {
       if (seen.has(i) || !t.f?.crop || t.f.growth < 1 || !sim.farmable(s, i)) return;
       const group = sim.fieldGroup(s, i, sim.tractorCapacity(s));
       group.forEach((g) => seen.add(g));
-      const { x, y } = sim.xy(s, i);
+      // Float the bubble over the middle of the field.
+      const cx = group.reduce((n, g) => n + sim.xy(s, g).x, 0) / group.length, cy = group.reduce((n, g) => n + sim.xy(s, g).y, 0) / group.length;
+      const mid = group.reduce((b, g) => { const p = sim.xy(s, g), q = sim.xy(s, b); return Math.hypot(p.x - cx, p.y - cy) < Math.hypot(q.x - cx, q.y - cy) ? g : b; }, group[0]);
+      const { x, y } = sim.xy(s, mid);
       add(x, y, ITEM[sim.CROP[t.f.crop].item].icon, () => { const ev: SimEvent[] = []; this.act(sim.fieldAction(s, i, 'harvest', undefined, this.whole, ev), ev); }, 'bubble-field', 0.55);
     });
     for (const b of s.buildings) {

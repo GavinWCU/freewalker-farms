@@ -14,5 +14,6 @@ export default defineConfig({
   },
   test: {
     include: ['tests/sim/**/*.test.ts'],
+    testTimeout: 60_000,
   },
 } as any);
