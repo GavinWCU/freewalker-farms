@@ -15,3 +15,19 @@ test('plays offline after the first visit (PWA service worker)', async ({ page, 
   await expect(page.getByTestId('title')).toBeVisible();
   await context.setOffline(false);
 });
+
+test('after a new deploy, an online visit loads the new page, not a stale cached one', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
+  await page.reload();
+  await expect(page.getByTestId('title')).toBeVisible();
+  // Pretend the cache holds the page from an older deploy, pointing at a JS file that no longer exists.
+  await page.evaluate(async () => {
+    for (const k of await caches.keys()) {
+      const c = await caches.open(k);
+      await c.put(new URL('./', location.href).href, new Response('<!doctype html><div id="app"></div><script type="module" src="assets/gone-old.js"></script>', { headers: { 'content-type': 'text/html' } }));
+    }
+  });
+  await page.reload();
+  await expect(page.getByTestId('title')).toBeVisible();
+});
