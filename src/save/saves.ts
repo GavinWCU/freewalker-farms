@@ -15,6 +15,8 @@ export const SLOTS = 3;
 export const ROTATION = 3; // keep the last 3 autosaves per slot
 
 export interface SlotMeta { head: number; farmName: string; day: number; money: number; acres: number; savedAt: number }
+export interface PhotoMeta { id: number; caption: string; at: number }
+export const MAX_PHOTOS = 60;
 export interface LoadResult { state: GameState; fellBack: boolean; error?: string }
 
 export class SaveManager {
@@ -55,8 +57,30 @@ export class SaveManager {
   }
 
   async remove(slot: number) {
+    for (const p of await this.photos(slot)) await this.db.del(`slot${slot}/photo/${p.id}`);
+    await this.db.del(this.photoIndex(slot));
     await this.db.del(this.metaKey(slot));
     for (let r = 0; r < ROTATION; r++) await this.db.del(this.dataKey(slot, r));
+  }
+
+  // ── photo album: kept apart from the farm save so autosaves and exports stay small ──
+  private photoIndex = (slot: number) => `slot${slot}/photos`;
+  async photos(slot: number): Promise<PhotoMeta[]> {
+    try { return JSON.parse((await this.db.get(this.photoIndex(slot))) ?? '[]'); } catch { return []; }
+  }
+  photo(slot: number, id: number) { return this.db.get(`slot${slot}/photo/${id}`); }
+  async addPhoto(slot: number, dataUrl: string, caption: string): Promise<PhotoMeta> {
+    const list = await this.photos(slot);
+    const p: PhotoMeta = { id: (list[0]?.id ?? 0) + 1, caption, at: this.now() };
+    await this.db.set(`slot${slot}/photo/${p.id}`, dataUrl);
+    list.unshift(p);
+    for (const old of list.splice(MAX_PHOTOS)) await this.db.del(`slot${slot}/photo/${old.id}`);
+    await this.db.set(this.photoIndex(slot), JSON.stringify(list));
+    return p;
+  }
+  async deletePhoto(slot: number, id: number) {
+    await this.db.del(`slot${slot}/photo/${id}`);
+    await this.db.set(this.photoIndex(slot), JSON.stringify((await this.photos(slot)).filter((p) => p.id !== id)));
   }
 
   exportJson(s: GameState) { return serialize(s); }

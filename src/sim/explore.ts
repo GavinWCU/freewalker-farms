@@ -2,7 +2,7 @@ import { addXp } from './levels';
 import { hooks } from './sim';
 import { chance, hash2, nextRandom, pick, randInt } from './rng';
 import { earn, log, spend, stat } from './state';
-import { seasonOf } from './time';
+import { seasonIndex, seasonOf } from './time';
 import { fieldAction, farmable, fieldState } from './farming';
 import { buildingAt, no, ok, type Result } from './build';
 import { N4, idx, inBounds, isLand, tileAt, xy } from './world';
@@ -174,6 +174,7 @@ export function fishingSpot(s: GameState, i: number): 'dock' | 'shore' | null {
 export function castLine(s: GameState, i: number, skill: number, ev: SimEvent[] = []): Result & { fish?: string; lb?: number; record?: boolean } {
   const spot = fishingSpot(s, i);
   if (!spot) return no('Fish from your shore or a dock');
+  if (s.flags.bait === s.time.day) skill = Math.min(1, skill + 0.2); // General Store bait, good for the day
   if (skill < 0.15 || nextRandom(s) > 0.4 + skill * 0.6) return { ...no('It got away!'), fish: undefined };
   const night = s.time.minute < 6 * 60 || s.time.minute > 20 * 60;
   const season = seasonOf(s.time.day);
@@ -193,6 +194,17 @@ export function castLine(s: GameState, i: number, skill: number, ev: SimEvent[] 
   return { ok: true, msg: `${f.name}, ${lb} lb${record ? ' — new personal record! 🏆' : ''}`, fish: f.id, lb, record };
 }
 
+// ── crop insurance (bought from the insurance agent in town) ────────────────
+export const STORM_CLAIM = 140;   // $ per acre knocked back by a storm
+export const DROUGHT_CLAIM = 90;  // $ per planted acre when a drought sets in
+export const isInsured = (s: GameState) => s.flags.insured === seasonIndex(s.time.day) + 1;
+export function insurancePays(s: GameState, amount: number, why: string, ev: SimEvent[]) {
+  earn(s, amount, 'Insurance claims');
+  stat(s, 'claims');
+  log(s, `Insurance paid $${amount.toLocaleString()} for ${why}.`);
+  ev.push({ type: 'toast', text: `🛡️ Your crop insurance paid $${amount.toLocaleString()} for ${why}` });
+}
+
 // ── random events ───────────────────────────────────────────────────────────
 export const OPPORTUNITIES = [
   { text: 'A film crew rented Lake Stillwater for a day of shooting', cash: 1500 },
@@ -210,11 +222,14 @@ hooks.day.push((s, ev) => {
     let hit = 0;
     for (const t of s.tiles) if (t.f?.crop && t.f.growth < 1 && chance(s, 0.15)) { t.f.growth = Math.max(0, t.f.growth - (s.upgrades.includes('drone') ? 0.12 : 0.25)); hit++; }
     ev.push({ type: 'toast', text: `⛈️ Storm! ${hit ? `${hit} acres of crops were knocked back` : 'Your crops rode it out'}` });
+    if (hit && isInsured(s)) insurancePays(s, hit * STORM_CLAIM, `storm damage on ${hit} acres`, ev);
   }
   if (season === 1 && !active('drought') && chance(s, 0.05)) {
     s.events.push({ kind: 'drought', until: s.time.day + randInt(s, 4, 7) });
     ev.push({ type: 'toast', text: '🌵 Drought! No rain for days — water your crops' });
     log(s, 'A drought set in.');
+    const planted = s.tiles.filter((t) => t.f?.crop && t.f.growth < 1).length;
+    if (planted && isInsured(s)) insurancePays(s, planted * DROUGHT_CLAIM, `drought on ${planted} planted acres`, ev);
   }
   if (season < 3 && !active('bumper') && chance(s, 0.03)) {
     s.events.push({ kind: 'bumper', until: s.time.day + 4 });

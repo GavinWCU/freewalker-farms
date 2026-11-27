@@ -48,6 +48,8 @@ export class View {
   private acePos = new THREE.Vector3();
   private cows: Instancer;
   private solar: Instancer;
+  private herd: Instancer;
+  private roam = new Map<number, { x: number; y: number; rot: number }>();
   private tenantCows: { id: number; x: number; y: number }[] = [];
   private selection: THREE.Mesh;
   private ghostObj: THREE.Object3D | null = null;
@@ -94,6 +96,8 @@ export class View {
     this.gravel = new Instancer(strip('#e4d2a2'), 6000, { shadows: false });
     this.trail = new Instancer(strip('#c79a5e'), 6000, { shadows: false });
     this.cows = new Instancer(buildModel('cow'), 600);
+    this.herd = new Instancer(buildModel('buffalo'), 600);
+    this.scene.add(this.herd.group);
     this.solar = new Instancer(buildModel('solar_panels'), 400);
     for (const i of [this.trees, this.pines, this.rocks, this.signs, this.posts, this.rails, this.whitePosts, this.whiteRails, this.dirt, this.cows, this.solar, this.gravel, this.trail]) this.scene.add(i.group);
 
@@ -629,9 +633,34 @@ export class View {
       this.cows.add(x, this.ground(x, y), y, -t, c.age < 9 ? 0.75 : 1);
     }
     this.cows.commit();
+    // Buffalo roam: each day they head for a new acre of pasture; walk there slowly, grazing.
+    this.herd.reset();
+    for (const c of s.buffalo) {
+      let p = this.roam.get(c.id);
+      if (!p || Math.hypot(p.x - c.x, p.y - c.y) > 12) { p = { x: c.x, y: c.y, rot: 0 }; this.roam.set(c.id, p); }
+      const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy);
+      if (d > 0.02) { const k = Math.min(d, dt * 0.25); p.x += (dx / d) * k; p.y += (dy / d) * k; p.rot = Math.atan2(-dy, dx); }
+      const t = this.time.value * 0.12 + c.id;
+      const x = p.x + Math.sin(t) * 0.15, y = p.y + Math.cos(t * 0.8) * 0.15;
+      this.herd.add(x, this.ground(x, y), y, d > 0.02 ? p.rot : -t, c.age < 12 ? 0.7 : 1.05);
+    }
+    this.herd.commit();
   }
   /** Turns the player model toward a movement direction (screen-relative input already mapped to world). */
   face(dx: number, dy: number) { if (dx || dy) this.facing = Math.atan2(-dy, dx); }
+
+  /** Takes a photo of what's on screen as a JPEG data URL (draws and reads in the same tick, so no preserveDrawingBuffer). */
+  snapshot(maxW = 1600, tint = ''): string {
+    this.renderer.render(this.scene, this.camera);
+    const src = this.renderer.domElement;
+    const k = Math.min(1, maxW / src.width);
+    const c = document.createElement('canvas');
+    c.width = Math.round(src.width * k); c.height = Math.round(src.height * k);
+    const x = c.getContext('2d')!;
+    x.drawImage(src, 0, 0, c.width, c.height);
+    if (tint) { x.globalCompositeOperation = 'multiply'; x.fillStyle = tint; x.fillRect(0, 0, c.width, c.height); } // golden hour / night glow, as on screen
+    return c.toDataURL('image/jpeg', 0.85);
+  }
 
   dispose() { this.renderer.dispose(); this.renderer.domElement.remove(); }
 }

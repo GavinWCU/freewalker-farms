@@ -7,6 +7,7 @@ test('patch notes show once after loading in, only what is new, and can be reope
   await nameFarm(page, 'Notes Farm');
   const notes = page.getByTestId('patch-notes');
   await expect(notes).toContainText('Fast forward');
+  await expect(notes).toContainText('Town of Stillwater');
   await expect(notes).not.toContainText('Battery saver'); // already seen
   await page.getByTestId('notes-ok').click();
   await expect(notes).toHaveCount(0);

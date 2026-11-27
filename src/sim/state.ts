@@ -4,7 +4,7 @@ import { START, WORLD_H, WORLD_W } from './map/home80';
 import { START_MINUTE, seasonKey } from './time';
 import type { GameState } from './types';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const START_MONEY = 25000;
 
 export function newGame(seed: number, farmName = 'Freewalker Farms'): GameState {
@@ -34,6 +34,7 @@ export function newGame(seed: number, farmName = 'Freewalker Farms'): GameState 
     stand: { stock: {}, today: { sold: {}, revenue: 0, ranOut: [], customers: 0 }, last: null },
     workers: { farmhand: 0, cashier: 0, ranchhand: 0 },
     cattle: [],
+    buffalo: [],
     player: { x: p.x + 0.5, y: p.y + 0.5, vehicle: 'foot', tractorMode: 'harvest' },
     vehicles: ['foot', 'truck', 'tractor'],
     fishing: { records: {}, caught: 0 },

@@ -3,7 +3,7 @@ import { addXp } from './levels';
 import { hooks } from './sim';
 import { chance, nextRandom, randInt } from './rng';
 import { earn, log, spend, stat } from './state';
-import { countBuilding, hasBuilding, no, ok, type Result } from './build';
+import { charm, countBuilding, hasBuilding, no, ok, type Result } from './build';
 import { farmable, fieldGroup, harvest, plant, tractorCapacity } from './farming';
 import { collect } from './build';
 import { BUILDING } from './content/buildings';
@@ -56,7 +56,7 @@ export function customersPerHour(s: GameState) {
   const base = [0, 1.6, 2.6, 4.2][b.level];
   const weather = { sunny: 1, cloudy: 0.9, rain: 0.6, storm: 0.3, snow: 0.5 }[s.weather];
   const cashier = s.workers.cashier > 0 ? 1.3 : isMarket(s) ? 0.6 : 1;
-  const extras = 1 + countBuilding(s, 'landscaping') * 0.1 + (hasBuilding(s, 'farm_sign') ? 0.1 : 0) + (s.upgrades.includes('stand_sign') ? 0.25 : 0);
+  const extras = charm(s) + countBuilding(s, 'landscaping') * 0.1 +(hasBuilding(s, 'farm_sign') ? 0.1 : 0) + (s.upgrades.includes('stand_sign') ? 0.25 : 0);
   return base * weather * cashier * extras;
 }
 
@@ -146,40 +146,70 @@ hooks.hour.push((s, ev) => {
   }
 });
 
-// ── cattle ──────────────────────────────────────────────────────────────────
-export const CALF_PRICE = 900;
-export const CATTLE_MATURE = 18; // days
-export const cattleCapacity = (s: GameState) =>
-  countBuilding(s, 'cattle_corral') ? Math.floor(s.tiles.filter((t) => t.owned && t.t === 'pasture' && !t.lease && !t.b).length / 2) + countBuilding(s, 'cattle_corral') * 4 : 0;
-export const cattlePrice = (s: GameState) => Math.round(1700 * (s.market.cattle ?? 1));
+// ── cattle and buffalo ──────────────────────────────────────────────────────
+// Both herds graze the same pasture, so they share one capacity.
+export type HerdKind = 'cattle' | 'buffalo';
+export const HERDS: Record<HerdKind, { name: string; young: string; youngs: string; pen: string; buy: number; sell: number; mature: number; icon: string }> = {
+  cattle: { name: 'Cattle', young: 'calf', youngs: 'calves', pen: 'cattle_corral', buy: 900, sell: 1700, mature: 18, icon: '🐄' },
+  buffalo: { name: 'Buffalo', young: 'buffalo calf', youngs: 'buffalo calves', pen: 'buffalo_paddock', buy: 2400, sell: 4600, mature: 27, icon: '🦬' },
+};
+export const CALF_PRICE = HERDS.cattle.buy;
+export const CATTLE_MATURE = HERDS.cattle.mature; // days
+export const herd = (s: GameState, k: HerdKind) => (k === 'cattle' ? s.cattle : s.buffalo);
+const grazing = (s: GameState) => s.tiles.map((t, i) => (t.owned && t.t === 'pasture' && !t.lease && !t.b ? i : -1)).filter((i) => i >= 0);
+/** Head of livestock (cattle + buffalo together) your pasture can carry. */
+export const cattleCapacity = (s: GameState) => {
+  const pens = countBuilding(s, 'cattle_corral') + countBuilding(s, 'buffalo_paddock');
+  return pens ? Math.floor(grazing(s).length / 2) + pens * 4 : 0;
+};
+export const herdRoom = (s: GameState) => Math.max(0, cattleCapacity(s) - s.cattle.length - s.buffalo.length);
+export const herdPrice = (s: GameState, k: HerdKind) => Math.round(HERDS[k].sell * (s.market.cattle ?? 1));
+export const cattlePrice = (s: GameState) => herdPrice(s, 'cattle');
 
-export function buyCalves(s: GameState, n: number): Result {
-  const corral = s.buildings.find((b) => b.type === 'cattle_corral');
-  if (!corral) return no('Build a Cattle Corral first');
-  n = Math.min(Math.floor(n), cattleCapacity(s) - s.cattle.length);
+export function buyYoung(s: GameState, k: HerdKind, n: number): Result {
+  const d = HERDS[k];
+  const pen = s.buildings.find((b) => b.type === d.pen);
+  if (!pen) return no(`Build a ${BUILDING[d.pen].name} first`);
+  n = Math.min(Math.floor(n), herdRoom(s));
   if (n <= 0) return no('No more room on your pasture');
-  if (!spend(s, CALF_PRICE * n, 'Cattle')) return no('Not enough money');
-  const pasture = s.tiles.map((t, i) => (t.owned && t.t === 'pasture' && !t.lease && !t.b ? i : -1)).filter((i) => i >= 0);
-  for (let k = 0; k < n; k++) {
-    const p = pasture.length ? xy(s, pasture[Math.floor(nextRandom(s) * pasture.length)]) : { x: corral.x, y: corral.y };
-    s.cattle.push({ id: s.nextId++, age: 0, x: p.x + 0.3 + nextRandom(s) * 0.4, y: p.y + 0.3 + nextRandom(s) * 0.4 });
+  if (!spend(s, d.buy * n, d.name)) return no('Not enough money');
+  const pasture = grazing(s);
+  for (let j = 0; j < n; j++) {
+    const p = pasture.length ? xy(s, pasture[Math.floor(nextRandom(s) * pasture.length)]) : { x: pen.x, y: pen.y };
+    herd(s, k).push({ id: s.nextId++, age: 0, x: p.x + 0.3 + nextRandom(s) * 0.4, y: p.y + 0.3 + nextRandom(s) * 0.4 });
   }
-  return ok(`Bought ${n} calf${n > 1 ? 'ves' : ''}`);
+  return ok(`Bought ${n} ${n > 1 ? d.youngs : d.young}`);
 }
-export function sellCattle(s: GameState, ev?: SimEvent[]): Result {
-  const ready = s.cattle.filter((c) => c.age >= CATTLE_MATURE);
-  if (!ready.length) return no(`Cattle are ready at ${CATTLE_MATURE} days old`);
-  const total = ready.length * cattlePrice(s);
-  s.cattle = s.cattle.filter((c) => c.age < CATTLE_MATURE);
-  earn(s, total, 'Cattle');
-  stat(s, 'cattleSold', ready.length);
+export function sellGrown(s: GameState, k: HerdKind, ev?: SimEvent[]): Result {
+  const d = HERDS[k];
+  const ready = herd(s, k).filter((c) => c.age >= d.mature);
+  if (!ready.length) return no(`${d.name} are ready at ${d.mature} days old`);
+  const total = ready.length * herdPrice(s, k);
+  if (k === 'cattle') s.cattle = s.cattle.filter((c) => c.age < d.mature); else s.buffalo = s.buffalo.filter((c) => c.age < d.mature);
+  earn(s, total, d.name);
+  stat(s, k === 'cattle' ? 'cattleSold' : 'buffaloSold', ready.length);
   addXp(s, total / 100, ev);
-  return ok(`Sold ${ready.length} head for $${total.toLocaleString()}`);
+  return ok(`Sold ${ready.length} ${k === 'cattle' ? 'head' : 'buffalo'} for $${total.toLocaleString()}`);
 }
+export const buyCalves = (s: GameState, n: number) => buyYoung(s, 'cattle', n);
+export const sellCattle = (s: GameState, ev?: SimEvent[]) => sellGrown(s, 'cattle', ev);
+
 hooks.day.push((s) => {
   s.market.cattle = Math.round(Math.min(1.4, Math.max(0.75, (s.market.cattle ?? 1) + (1 - (s.market.cattle ?? 1)) * 0.15 + (nextRandom(s) - 0.5) * 0.1)) * 1000) / 1000;
-  if (!s.cattle.length) return;
+  const head = s.cattle.length + s.buffalo.length;
+  if (!head) return;
   for (const c of s.cattle) c.age++;
-  // Winter hay
-  if (seasonOf(s.time.day) === 3 && !spend(s, 6 * s.cattle.length, 'Feed')) log(s, 'Ran short of hay money this winter.');
+  for (const c of s.buffalo) c.age++;
+  // Buffalo roam: each morning they wander to another acre of your pasture (no dice roll, so nothing else shifts).
+  const pasture = grazing(s);
+  if (pasture.length) for (const c of s.buffalo) {
+    const p = xy(s, pasture[(c.id * 7919 + s.time.day * 104729) % pasture.length]);
+    c.x = p.x + 0.2 + ((c.id * 37) % 60) / 100; c.y = p.y + 0.2 + ((c.id * 53) % 60) / 100;
+  }
+  // Winter feed: hay from the barn first, then bought feed.
+  if (seasonOf(s.time.day) === 3) {
+    const fromBarn = Math.min(head, s.inventory.hay ?? 0);
+    if (fromBarn) s.inventory.hay -= fromBarn;
+    if (head > fromBarn && !spend(s, 6 * (head - fromBarn), 'Feed')) log(s, 'Ran short of hay money this winter.');
+  }
 });

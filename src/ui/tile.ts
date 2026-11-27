@@ -73,7 +73,11 @@ function buildingPanel(g: Game, b: sim.Building): Node[] {
     const p = def.produces;
     out.push(h('p', {}, `Makes ${p.amount * b.level} ${p.item} every ${p.hours}h${p.seasons ? ' (in season)' : ''} · ready: ${b.ready}`));
   }
-  if (def.income) out.push(h('p', {}, `Earns about ${money(def.income.perDay * b.level)}/day for ${def.income.business}`));
+  if (def.income) {
+    const sea = def.income.seasons;
+    const open = !sea || sea.includes(sim.seasonOf(s.time.day));
+    out.push(h('p', {}, `Earns about ${money(def.income.perDay * b.level)}/day for ${def.income.business}${sea ? ` in ${sea.map((k) => sim.SEASONS[k]).join(' and ')}${open ? ' (open now!)' : ' (closed until then)'}` : ''}`));
+  }
   const row = h('div.row');
   if (def.produces && b.ready > 0) row.append(btn(`✅ Collect ${b.ready}`, () => { const ev: SimEvent[] = []; g.act(sim.collect(s, b.id, ev), ev); }, 'gold', { 'data-testid': 'act-collect' }));
   const up = sim.upgradeInfo(s, b);

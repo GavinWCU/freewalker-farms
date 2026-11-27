@@ -86,7 +86,8 @@ export function harvestYield(s: GameState, i: number) {
   const t = s.tiles[i], c = CROP[t.f!.crop!];
   const bumper = s.events.some((e) => e.kind === 'bumper' && e.until > s.time.day) ? 1.5 : 1;
   const combine = s.upgrades.includes('combine') ? 1.15 : 1;
-  return Math.max(1, Math.round(c.yield * t.soil * bumper * combine));
+  const fert = (s.flags.fert ?? 0) > 0 ? 1.25 : 1; // General Store fertilizer
+  return Math.max(1, Math.round(c.yield * t.soil * bumper * combine * fert));
 }
 
 export function harvest(s: GameState, i: number, ev?: SimEvent[]): Result {
@@ -94,6 +95,7 @@ export function harvest(s: GameState, i: number, ev?: SimEvent[]): Result {
   if (!t.f?.crop || t.f.growth < 1) return no('Not ready yet');
   const c = CROP[t.f.crop];
   const n = harvestYield(s, i);
+  if ((s.flags.fert ?? 0) > 0) s.flags.fert--;
   s.inventory[c.item] = (s.inventory[c.item] ?? 0) + n;
   t.f.crop = null; t.f.growth = 0; t.f.watered = false;
   stat(s, 'harvested'); stat(s, `made_${c.item}`, n);

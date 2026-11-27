@@ -50,7 +50,7 @@ buildingSections.push((g, b) => {
   if (b.type === 'cattle_corral') {
     const s = g.s, grown = s.cattle.filter((c) => c.age >= sim.CATTLE_MATURE).length;
     return [
-      h('p', {}, `🐄 ${s.cattle.length} head (${grown} ready to sell) · room for ${sim.cattleCapacity(s)} on your pasture · ${money(sim.cattlePrice(s))}/head today`),
+      h('p', {}, `🐄 ${s.cattle.length} head (${grown} ready to sell) · room for ${sim.herdRoom(s)} more on your pasture · ${money(sim.cattlePrice(s))}/head today`),
       h('div.row', {},
         btn(`Buy a calf ${money(sim.CALF_PRICE)}`, () => g.act(sim.buyCalves(s, 1)), 'small', { 'data-testid': 'buy-calf' }),
         btn('Buy 5', () => g.act(sim.buyCalves(s, 5)), 'small grey'),

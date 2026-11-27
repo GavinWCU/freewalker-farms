@@ -12,4 +12,7 @@ import './business';
 import './explore';
 import './woods';
 import './legacy';
+import './ranch';
+import './town';
+import './camera';
 import './tutorial';

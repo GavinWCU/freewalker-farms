@@ -20,6 +20,10 @@ export const MIGRATIONS: Record<number, (s: any) => void> = {
   2: (s) => {
     s.hunting ??= { records: {}, harvested: 0, bestPoints: 0 };
   },
+  // v3 -> v4: a buffalo herd. (Town visits, insurance, hay, lessons and decor keep their state in flags/inventory.)
+  3: (s) => {
+    s.buffalo ??= [];
+  },
 };
 
 export function migrate(raw: any): GameState {

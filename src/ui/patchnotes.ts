@@ -6,6 +6,19 @@ import { menuSections } from './registry';
 // `version`; players see it once, the next time they load into a farm.
 export const NOTES: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.5', date: 'November 2026', title: 'Buffalo, the town and farmtainment',
+    items: [
+      '🏘️ The Town of Stillwater: tap Town to drive in. Visit the General Store (hay, bait, fertilizer), the Stillwater Diner (the chef buys produce and meat above market), First Prairie Bank (loans), the Post Office (a farm subsidy check every season, plus mail orders) and Hartley Insurance (crop insurance that pays for storm and drought damage).',
+      '🦬 Buffalo (level 9): build a Buffalo Paddock on pasture and raise a herd that roams your land. They share pasture with your cattle.',
+      '🐴 Horse Stable (level 7): students pay for riding lessons every day, and you can teach three lessons a day yourself.',
+      '🎃 Farmtainment for every season: Pumpkin Patch and Haunted House in the fall, Corn Maze in summer and fall, and a Christmas Tree Lot in winter.',
+      '🌿 Hay: tap any pasture you own or rent and bale it once a season. Sell the bales, or keep them to feed your herd through winter.',
+      '🪑 Outdoor decor: benches, planters, lamp posts, a gazebo, a stone fountain and an outdoor kitchen for cookouts. Each piece brings a few more visitors.',
+      '📷 Camera: tap 📷 at the top, frame your farm and snap a picture. Find them in ☰ Menu → Photo album, and save them to your device.',
+      '💾 Your saved farms carry over with everything they had.',
+    ],
+  },
+  {
     version: '1.4', date: 'November 2026', title: 'Fast forward, ice fishing and selling land',
     items: [
       '⏩ Fast forward: tap the ⏵ 1× button at the top to run the clock at 2×, 5× or 10× (or press F). Great for getting through a long winter.',

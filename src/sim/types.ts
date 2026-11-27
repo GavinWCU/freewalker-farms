@@ -99,6 +99,7 @@ export interface GameState {
   stand: Stand;
   workers: Workers;
   cattle: Animal[];
+  buffalo: Animal[];                       // v4
   player: { x: number; y: number; vehicle: Vehicle; tractorMode: string };
   vehicles: Vehicle[];                     // owned
   fishing: { records: Record<string, number>; caught: number };

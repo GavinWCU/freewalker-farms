@@ -118,3 +118,34 @@ input[type=number] { width: 90px; }
 .ask-input { width: 100%; font: inherit; font-size: 20px; padding: 10px 12px; border: 3px solid var(--ink); border-radius: 12px; margin: 4px 0 12px; box-sizing: border-box; }
 .chip.speed { font: inherit; cursor: pointer; pointer-events: auto; min-width: 64px; justify-content: center; }
 .chip.speed.on { background: var(--gold, #f2c14e); }
+
+/* camera */
+.photo-mode .hud, .photo-mode .toolbar, .photo-mode .bubbles, .photo-mode .stick, .photo-mode .side, .photo-mode .sheet { display: none !important; }
+.photo-ui { position: absolute; inset: 0; pointer-events: none; }
+.photo-frame { position: absolute; inset: calc(14px + var(--safe-t)) 14px calc(96px + var(--safe-b)); border: 3px solid rgba(255,255,255,.85); border-radius: 18px; box-shadow: 0 0 0 2px rgba(0,0,0,.25); }
+.photo-bar { position: absolute; left: 50%; bottom: calc(18px + var(--safe-b)); transform: translateX(-50%); display: flex; gap: 22px; align-items: center; pointer-events: auto; }
+.photo-shutter { width: 74px !important; height: 74px !important; font-size: 32px !important; }
+.photo-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.photo-flash.go { animation: flash .35s ease-out; }
+@keyframes flash { from { opacity: .9; } to { opacity: 0; } }
+.camera-btn { cursor: pointer; font-size: 20px; }
+.album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 8px; }
+.album-thumb { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 3px solid var(--ink); border-radius: 10px; cursor: pointer; -webkit-touch-callout: default; user-select: auto; -webkit-user-select: auto; }
+
+/* town */
+.modal-bg:has(.modal.town) { padding: 0; }
+.modal.town { width: 100%; height: 100%; max-height: 100%; border-radius: 0; border: 0; display: flex; flex-direction: column; padding: calc(14px + var(--safe-t)) 16px calc(14px + var(--safe-b));
+  background: linear-gradient(#9fd3f0, #e3f2f9 70%, #cfe6c0); }
+.modal.town > h2 { font-size: 30px; }
+.town-street { flex: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: end; margin: 8px -16px 0; padding: 0 16px 12px; min-height: 0; background: linear-gradient(transparent calc(100% - 12px), #d9cdb2 0); }
+.modal.town > .row { margin: 0 -16px calc(-14px - var(--safe-b)); padding: 18px 16px calc(18px + var(--safe-b)); background: repeating-linear-gradient(90deg, #f2c94c 0 34px, transparent 34px 68px) center / 100% 5px no-repeat, #6f6c68; border-top: 3px solid #b9b2a6; }
+.town-shop { position: relative; font: inherit; font-weight: 700; color: var(--ink); border: 3px solid var(--ink); border-radius: 10px 10px 4px 4px; padding: 34px 6px 54px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,.25); height: min(46vh, 320px);
+  background: linear-gradient(var(--cream), var(--cream)) center bottom / 34% 46px no-repeat, linear-gradient(color-mix(in srgb, var(--shop) 30%, #fff8ea), color-mix(in srgb, var(--shop) 30%, #fff8ea)); }
+.town-shop::after { content: ''; position: absolute; bottom: 0; left: 33%; width: 34%; height: 46px; background: color-mix(in srgb, var(--shop) 75%, #000); border: 3px solid var(--ink); border-bottom: 0; border-radius: 8px 8px 0 0; }
+.town-shop b { font-size: 16px; line-height: 1.15; text-align: center; }
+@media (max-width: 640px) { .town-street { grid-template-columns: repeat(2, 1fr); align-items: stretch; overflow: auto; } .town-shop { height: auto; min-height: 150px; } } 
+.town-shop:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.town-awning { position: absolute; top: 0; left: 0; right: 0; height: 22px; border-radius: 7px 7px 0 0; background: repeating-linear-gradient(90deg, var(--shop) 0 16px, #fff 16px 32px); border-bottom: 3px solid var(--ink); }
+.town-icon { font-size: 40px; line-height: 1; }
+.town-badge { position: absolute; top: 26px; right: 8px; background: #c0392b; color: #fff; border: 2px solid var(--ink); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+@media (max-width: 640px) { .toolbar { gap: 4px; } .toolbar .btn { min-width: 46px; } }

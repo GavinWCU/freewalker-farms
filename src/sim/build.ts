@@ -158,13 +158,20 @@ hooks.hour.push((s) => {
   }
 });
 
+/** Decor draws visitors: +3% per piece, up to +30%. */
+export const charm = (s: GameState) => 1 + Math.min(0.3, s.buildings.filter((b) => BUILDING[b.type].decor).length * 0.03);
+const CROWD = { sunny: 1, cloudy: 0.9, rain: 0.55, storm: 0.25, snow: 0.8 };
+
 hooks.day.push((s) => {
   const extras = 1 + countBuilding(s, 'landscaping') * 0.1;
+  const season = seasonOf(s.time.day);
   for (const b of s.buildings) {
     const inc = BUILDING[b.type].income;
     if (!inc) continue;
     if (b.type === 'buffalo_storage') continue; // paid monthly
+    if (inc.seasons && !inc.seasons.includes(season)) continue;
     let amt = inc.perDay * b.level;
+    if (inc.business === 'Farmtainment' || inc.business === 'Riding lessons') amt *= CROWD[s.weather] * extras * charm(s);
     if (b.type === 'guest_cabin') amt *= (chance(s, 0.75) ? 1 : 0.4) * extras;
     if (b.type === 'equipment_shed') amt *= chance(s, 0.6) ? 1 : 0.3;
     if (b.type === 'solar_panels' && s.upgrades.includes('solar_grid')) amt *= 1.5;

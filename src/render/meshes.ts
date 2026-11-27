@@ -536,6 +536,159 @@ function powerPole() {
   return g;
 }
 
+
+// ── 1.5: ranch, farmtainment and decor ─────────────────────────────────────
+function buffalo() {
+  const g = new THREE.Group();
+  const fur = '#4a3020', dark = '#2e1d13';
+  box(g, 0.2, 0.1, 0.11, fur, -0.02, 0.06, 0);
+  box(g, 0.12, 0.15, 0.13, dark, 0.06, 0.05, 0); // shaggy hump and shoulders
+  box(g, 0.07, 0.08, 0.08, dark, 0.15, 0.06, 0);
+  box(g, 0.03, 0.04, 0.05, '#1b120c', 0.17, 0.02, 0, false); // beard
+  for (const z of [-0.045, 0.045]) cone(g, 0.012, 0.04, '#e8dcc0', 0.16, 0.13, z, 5).rotation.x = z > 0 ? 0.6 : -0.6;
+  for (const [x, z] of [[-0.08, -0.035], [0.07, -0.035], [-0.08, 0.035], [0.07, 0.035]]) box(g, 0.028, 0.06, 0.028, '#21150e', x, 0, z, false);
+  return g;
+}
+function horse(color = '#8a5a34') {
+  const g = new THREE.Group();
+  box(g, 0.2, 0.08, 0.08, color, 0, 0.1, 0);
+  const neck = box(g, 0.05, 0.12, 0.05, color, 0.1, 0.13, 0); neck.rotation.z = -0.5;
+  box(g, 0.09, 0.045, 0.05, color, 0.16, 0.22, 0);
+  box(g, 0.012, 0.08, 0.052, '#2a1a10', 0.08, 0.16, 0, false); // mane
+  box(g, 0.02, 0.09, 0.02, '#2a1a10', -0.11, 0.07, 0, false); // tail
+  for (const [x, z] of [[-0.08, -0.025], [0.08, -0.025], [-0.08, 0.025], [0.08, 0.025]]) box(g, 0.02, 0.1, 0.02, color, x, 0, z, false);
+  return g;
+}
+function horseStable() {
+  const g = new THREE.Group();
+  box(g, 0.66, 0.26, 0.34, '#a3442f', 0, 0, -0.18);
+  roof(g, 0.74, 0.16, 0.4, shingle('#3b3f45'), 0.26, -0.18, false).rotation.y = Math.PI / 2;
+  for (const x of [-0.22, 0, 0.22]) { box(g, 0.14, 0.12, 0.02, '#6b3a20', x, 0.0, -0.005); box(g, 0.14, 0.08, 0.02, '#3a2416', x, 0.13, -0.005); }
+  const r = 0.4, rail = '#f4f1e8';
+  for (const z of [0.06, 0.44]) { box(g, r * 2, 0.02, 0.02, rail, 0, 0.12, z, false); box(g, r * 2, 0.02, 0.02, rail, 0, 0.2, z, false); }
+  for (const x of [-r, r]) { box(g, 0.02, 0.02, 0.38, rail, x, 0.12, 0.25, false); box(g, 0.02, 0.02, 0.38, rail, x, 0.2, 0.25, false); }
+  g.add(at(horse(), -0.12, 0, 0.26));
+  const h2 = at(horse('#e8e2d6'), 0.18, 0, 0.3); h2.rotation.y = 2.4; g.add(h2);
+  return g;
+}
+function paddock() {
+  const g = new THREE.Group();
+  const r = 0.44, rail = '#5c3b22';
+  for (const s of [-1, 1]) {
+    for (const y of [0.08, 0.16, 0.24]) { box(g, r * 2, 0.022, 0.022, rail, 0, y, s * r, false); box(g, 0.022, 0.022, r * 2, rail, s * r, y, 0, false); }
+    for (const t of [-1, 0, 1]) { cyl(g, 0.02, 0.02, 0.28, '#3e2716', s * r, 0, t * r); cyl(g, 0.02, 0.02, 0.28, '#3e2716', t * r, 0, s * r); }
+  }
+  cyl(g, 0.1, 0.1, 0.12, '#d8b45a', -0.22, 0, -0.2, 10).rotation.z = Math.PI / 2; // round bale
+  g.add(at(buffalo(), 0.12, 0, 0.1));
+  return g;
+}
+function pumpkinPatch() {
+  const g = new THREE.Group();
+  box(g, 0.84, 0.02, 0.84, '#6e4a2a', 0, 0, 0, false);
+  for (let i = 0; i < 18; i++) {
+    const x = -0.33 + (i % 6) * 0.13, z = -0.3 + Math.floor(i / 6) * 0.22;
+    ball(g, 0.045 + (i % 3) * 0.008, '#e8771f', x, 0.05, z, 1).scale.y = 0.75;
+    box(g, 0.01, 0.02, 0.01, '#4f6b2a', x, 0.08, z, false);
+  }
+  // hay wagon
+  box(g, 0.3, 0.05, 0.14, wood(), 0.2, 0.06, 0.34);
+  cyl(g, 0.06, 0.06, 0.05, '#d8b45a', 0.15, 0.1, 0.34, 8).rotation.x = Math.PI / 2;
+  cyl(g, 0.06, 0.06, 0.05, '#d8b45a', 0.26, 0.1, 0.34, 8).rotation.x = Math.PI / 2;
+  for (const x of [0.1, 0.3]) for (const z of [0.27, 0.41]) cyl(g, 0.035, 0.035, 0.015, '#333', x, 0.02, z, 10).rotation.x = Math.PI / 2;
+  return g;
+}
+function hauntedHouse() {
+  const g = new THREE.Group();
+  box(g, 0.5, 0.34, 0.4, '#4b4552', 0, 0, 0);
+  roof(g, 0.6, 0.24, 0.48, shingle('#26232b'), 0.34).rotation.y = Math.PI / 2;
+  box(g, 0.14, 0.42, 0.14, '#3c3743', 0.2, 0, -0.1);
+  cone(g, 0.12, 0.2, '#1e1b22', 0.2, 0.42, -0.1, 4).rotation.y = Math.PI / 4;
+  const glow = mat('#ffb347', { emissive: 0xff7a00 });
+  for (const x of [-0.14, 0.04]) box(g, 0.07, 0.08, 0.02, glow, x, 0.18, 0.205);
+  box(g, 0.08, 0.14, 0.02, '#1b1418', -0.05, 0, 0.205);
+  box(g, 0.5, 0.02, 0.02, '#6a2c8a', 0, 0.32, 0.21, false);
+  for (let i = 0; i < 3; i++) { const p = ball(g, 0.04, '#e8771f', -0.3 + i * 0.3, 0.035, 0.32, 1); p.scale.y = 0.8; }
+  for (let i = 0; i < 4; i++) box(g, 0.025, 0.14 + (i % 2) * 0.05, 0.025, '#8e8e8e', -0.35 + i * 0.07, 0, -0.32, false); // tombstones
+  return g;
+}
+function cornMaze() {
+  const g = new THREE.Group();
+  const corn = mat('#c9b04a'), green = mat('#7a9a3a');
+  for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
+    if ((i === 3 && j > 0) || (j === 1 && i > 0 && i < 6) || (j === 5 && i > 1) || (i === 5 && j > 2 && j < 6)) continue; // paths
+    box(g, 0.11, 0.16 + ((i * 3 + j) % 3) * 0.02, 0.11, (i + j) % 2 ? corn : green, -0.36 + i * 0.12, 0, -0.36 + j * 0.12, false);
+  }
+  box(g, 0.08, 0.1, 0.02, '#f4e6b8', 0, 0, 0.47);
+  return g;
+}
+function treeLot() {
+  const g = new THREE.Group();
+  for (let i = 0; i < 8; i++) {
+    const x = -0.32 + (i % 4) * 0.2, z = -0.28 + Math.floor(i / 4) * 0.22;
+    cone(g, 0.07, 0.2, '#2f6b3a', x, 0.03, z, 7);
+    cyl(g, 0.012, 0.012, 0.04, '#6b4426', x, 0, z);
+  }
+  box(g, 0.32, 0.16, 0.18, '#c0392b', 0.15, 0, 0.3);
+  roof(g, 0.36, 0.08, 0.22, shingle('#f4f1e8'), 0.16, 0.3, false, 0.15).rotation.y = Math.PI / 2;
+  const light = (c: string) => mat(c, { emissive: new THREE.Color(c).getHex() });
+  ['#ff4d4d', '#ffe14d', '#4dd2ff', '#7dff7d'].forEach((c, i) => ball(g, 0.012, light(c), -0.02 + i * 0.1, 0.17, 0.4, 0));
+  return g;
+}
+function bench() {
+  const g = new THREE.Group();
+  box(g, 0.32, 0.025, 0.1, wood(), 0, 0.08, 0);
+  box(g, 0.32, 0.08, 0.02, wood(), 0, 0.11, -0.05);
+  for (const x of [-0.13, 0.13]) box(g, 0.025, 0.08, 0.09, '#2e2e30', x, 0, 0, false);
+  return g;
+}
+function planter() {
+  const g = new THREE.Group();
+  box(g, 0.3, 0.1, 0.16, wood(), 0, 0, 0);
+  const fl = ['#ff6fa3', '#ffd23f', '#b07cff', '#ffffff', '#ff7a45'];
+  for (let i = 0; i < 8; i++) ball(g, 0.035, i % 2 ? '#3f8f3a' : fl[i % 5], -0.11 + (i % 4) * 0.075, 0.12, i < 4 ? -0.03 : 0.03, 0);
+  return g;
+}
+function lampPost() {
+  const g = new THREE.Group();
+  cyl(g, 0.04, 0.05, 0.03, '#2e2e30', 0, 0, 0);
+  cyl(g, 0.012, 0.012, 0.42, '#2e2e30', 0, 0.03, 0);
+  box(g, 0.06, 0.07, 0.06, mat('#fff2b3', { emissive: 0xffc94d }), 0, 0.44, 0);
+  cone(g, 0.05, 0.04, '#2e2e30', 0, 0.51, 0, 4).rotation.y = Math.PI / 4;
+  return g;
+}
+function gazebo() {
+  const g = new THREE.Group();
+  cyl(g, 0.34, 0.36, 0.04, '#d9d2c3', 0, 0, 0, 8);
+  for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; cyl(g, 0.016, 0.016, 0.3, '#ffffff', Math.cos(a) * 0.3, 0.04, Math.sin(a) * 0.3, 6); }
+  for (let i = 0; i < 8; i++) { if (i === 2) continue; const a = (i / 8 + 1 / 16) * Math.PI * 2; const r = box(g, 0.24, 0.02, 0.015, '#ffffff', Math.cos(a) * 0.28, 0.14, Math.sin(a) * 0.28, false); r.rotation.y = -a + Math.PI / 2; }
+  cone(g, 0.42, 0.2, shingle('#3d6b4a'), 0, 0.34, 0, 8);
+  ball(g, 0.025, '#ffffff', 0, 0.55, 0, 0);
+  return g;
+}
+function outdoorKitchen() {
+  const g = new THREE.Group();
+  const stone = mat('#a7a29a');
+  box(g, 0.5, 0.14, 0.14, stone, -0.05, 0, -0.18);
+  box(g, 0.52, 0.02, 0.16, '#5b5f63', -0.05, 0.14, -0.18, false);
+  box(g, 0.16, 0.06, 0.12, '#2e2e30', 0.08, 0.16, -0.18); // grill
+  box(g, 0.08, 0.3, 0.1, stone, -0.26, 0.14, -0.2); // chimney
+  for (const [x, z] of [[-0.35, -0.3], [0.35, -0.3], [-0.35, 0.3], [0.35, 0.3]]) box(g, 0.04, 0.4, 0.04, wood(), x, 0, z, false);
+  box(g, 0.78, 0.03, 0.68, wood(), 0, 0.4, 0, false); // pergola
+  for (let i = 0; i < 5; i++) box(g, 0.025, 0.03, 0.72, '#7a4f2a', -0.32 + i * 0.16, 0.43, 0, false);
+  box(g, 0.34, 0.02, 0.18, wood(), 0, 0.1, 0.16); // table
+  for (const x of [-0.13, 0.13]) box(g, 0.02, 0.1, 0.16, '#6b4426', x, 0, 0.16, false);
+  return g;
+}
+function fountain() {
+  const g = new THREE.Group();
+  const stone = mat('#bcb6ab');
+  cyl(g, 0.32, 0.34, 0.08, stone, 0, 0, 0, 16);
+  cyl(g, 0.28, 0.28, 0.01, mat('#5aa9e0', { transparent: 0.85 }), 0, 0.075, 0, 16);
+  cyl(g, 0.04, 0.06, 0.2, stone, 0, 0.08, 0, 10);
+  cyl(g, 0.14, 0.1, 0.03, stone, 0, 0.27, 0, 12);
+  cone(g, 0.05, 0.1, mat('#bfe3ff', { transparent: 0.7 }), 0, 0.3, 0, 8);
+  return g;
+}
 export interface ModelDef { id: string; name: string; group: string; build: (level?: number) => THREE.Object3D }
 
 export const MODELS: ModelDef[] = [
@@ -569,6 +722,20 @@ export const MODELS: ModelDef[] = [
   { id: 'buffalo_storage', name: 'Buffalo Storage', group: 'Buildings', build: storage },
   { id: 'farmhouse', name: 'Dream Farmhouse', group: 'Buildings', build: farmhouse },
   { id: 'landscaping', name: 'Landscaped Grounds', group: 'Buildings', build: landscaping },
+  { id: 'bench', name: 'Garden Bench', group: 'Buildings', build: bench },
+  { id: 'planter', name: 'Flower Planter', group: 'Buildings', build: planter },
+  { id: 'lamp_post', name: 'Lamp Post', group: 'Buildings', build: lampPost },
+  { id: 'gazebo', name: 'Gazebo', group: 'Buildings', build: gazebo },
+  { id: 'outdoor_kitchen', name: 'Outdoor Kitchen', group: 'Buildings', build: outdoorKitchen },
+  { id: 'pumpkin_patch', name: 'Pumpkin Patch', group: 'Buildings', build: pumpkinPatch },
+  { id: 'horse_stable', name: 'Horse Stable', group: 'Buildings', build: horseStable },
+  { id: 'buffalo_paddock', name: 'Buffalo Paddock', group: 'Buildings', build: paddock },
+  { id: 'corn_maze', name: 'Corn Maze', group: 'Buildings', build: cornMaze },
+  { id: 'haunted_house', name: 'Haunted House', group: 'Buildings', build: hauntedHouse },
+  { id: 'tree_lot', name: 'Christmas Tree Lot', group: 'Buildings', build: treeLot },
+  { id: 'fountain', name: 'Stone Fountain', group: 'Buildings', build: fountain },
+  { id: 'buffalo', name: 'Buffalo', group: 'Characters', build: buffalo },
+  { id: 'horse', name: 'Horse', group: 'Characters', build: () => horse() },
   { id: 'tree_round', name: 'Round Tree', group: 'Nature', build: () => treeRound() },
   { id: 'tree_pine', name: 'Pine', group: 'Nature', build: () => treePine() },
   { id: 'apple_tree', name: 'Apple Tree', group: 'Nature', build: appleTree },
