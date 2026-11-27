@@ -301,6 +301,17 @@ function windmill() {
   cyl(g, 0.1, 0.1, 0.16, '#7fb3cf', 0.28, 0, 0.1);
   return g;
 }
+function windTurbine() {
+  const g = new THREE.Group();
+  cyl(g, 0.16, 0.18, 0.05, '#b9bec3', 0, 0, 0, 12);
+  cyl(g, 0.03, 0.06, 1.5, '#f2f4f5', 0, 0.05, 0, 12);
+  box(g, 0.09, 0.08, 0.2, '#f2f4f5', 0, 1.53, -0.02);
+  const hub = new THREE.Group(); hub.position.set(0, 1.57, 0.1); hub.name = 'spin';
+  ball(hub, 0.04, '#dfe3e6', 0, 0, 0, 1);
+  for (let i = 0; i < 3; i++) { const arm = new THREE.Group(); arm.rotation.z = (i / 3) * Math.PI * 2; box(arm, 0.04, 0.55, 0.012, '#f7f8f9', 0, 0.02, 0, false); hub.add(arm); }
+  g.add(hub);
+  return g;
+}
 function blackBarn() {
   const g = new THREE.Group();
   box(g, 0.66, 0.4, 0.78, '#2a2a2e', 0, 0, 0);
@@ -546,6 +557,7 @@ export const MODELS: ModelDef[] = [
   { id: 'bell_post', name: 'The Bell Post', group: 'Buildings', build: bellPost },
   { id: 'kims_garden', name: "Kim's Garden", group: 'Buildings', build: kimsGarden },
   { id: 'windmill', name: 'Windmill', group: 'Buildings', build: windmill },
+  { id: 'wind_turbine', name: 'Wind Turbine', group: 'Buildings', build: windTurbine },
   { id: 'black_barn', name: 'Black Barn', group: 'Buildings', build: blackBarn },
   { id: 'cattle_corral', name: 'Cattle Corral', group: 'Buildings', build: corral },
   { id: 'silo', name: 'Grain Silo', group: 'Buildings', build: silo },

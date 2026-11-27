@@ -44,6 +44,7 @@ export const BUILDINGS: BuildingDef[] = [
   { id: 'silo', name: 'Grain Silo', cost: 5000, level: 9, tier: 3, place: 'land', desc: 'Store grain: corn, soybeans and wheat sell for 10% more.' },
   { id: 'greenhouse', name: 'Greenhouse', cost: 8000, level: 10, tier: 3, place: 'land', desc: 'Produce all year round.', produces: { item: 'vegetables', amount: 4, hours: 24 } },
   { id: 'orchard', name: 'Apple Orchard', cost: 4000, level: 10, tier: 3, place: 'land', desc: 'Apples ripen through summer and fall.', produces: { item: 'apples', amount: 6, hours: 48, seasons: [1, 2] } },
+  { id: 'wind_turbine', name: 'Wind Turbine', cost: 22000, level: 10, tier: 3, place: 'land', desc: 'A tall turbine that sells wind power to the grid.', income: { business: 'Wind power', perDay: 140 } },
   { id: 'workshop', name: "Gavin's Workshop", cost: 15000, level: 11, tier: 3, place: 'land', unique: true, desc: 'Technology, automation and farm upgrades.' },
   // ── Level 4 — Freewalker Estate
   { id: 'lab', name: "Paige's Engineering Lab", cost: 40000, level: 13, tier: 4, place: 'land', unique: true, desc: 'Unlocks better equipment and building upgrades.' },

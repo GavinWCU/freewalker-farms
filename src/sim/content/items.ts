@@ -14,5 +14,7 @@ export const ITEMS: ItemDef[] = [
   { id: 'honey', name: 'Honey', unit: 'jar', icon: '🍯', price: 9, retail: 15 },
   { id: 'fish', name: 'Fish', unit: 'lb', icon: '🐟', price: 6, retail: 10 },
   { id: 'goods', name: 'Freewalker Goods', unit: 'item', icon: '👕', price: 15, retail: 32 },
+  { id: 'lumber', name: 'Lumber', unit: 'log', icon: '🪵', price: 14, retail: 22 },
+  { id: 'venison', name: 'Venison', unit: 'lb', icon: '🥩', price: 7, retail: 12 },
 ];
 export const ITEM: Record<string, ItemDef> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));

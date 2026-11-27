@@ -16,6 +16,10 @@ export const MIGRATIONS: Record<number, (s: any) => void> = {
     s.gifts ??= [];
     if (!s.spots?.length) s.spots = generateSpots(s.seed, s.tiles, s.w);
   },
+  // v2 -> v3: deer hunting record book. (Lumber and the wind turbine need no new saved fields.)
+  2: (s) => {
+    s.hunting ??= { records: {}, harvested: 0, bestPoints: 0 };
+  },
 };
 
 export function migrate(raw: any): GameState {

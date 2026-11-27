@@ -102,6 +102,7 @@ export interface GameState {
   player: { x: number; y: number; vehicle: Vehicle; tractorMode: string };
   vehicles: Vehicle[];                     // owned
   fishing: { records: Record<string, number>; caught: number };
+  hunting: { records: Record<string, number>; harvested: number; bestPoints: number }; // v3
   spots: Spot[];
   gifts: { x: number; y: number; item: string; value: number }[]; // finds waiting to be collected (v2)
   parked: Record<string, { x: number; y: number }>;                  // where idle vehicles sit (v2)

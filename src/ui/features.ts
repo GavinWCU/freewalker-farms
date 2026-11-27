@@ -10,5 +10,6 @@ buildingSections.push((g, b) => {
 import './land';
 import './business';
 import './explore';
+import './woods';
 import './legacy';
 import './tutorial';

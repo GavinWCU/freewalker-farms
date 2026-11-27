@@ -10,7 +10,7 @@ const GRAIN = ['corn', 'soybeans', 'wheat'];
 export const BUSINESS_OF: Record<string, string> = {
   corn: 'Corn & soybeans', soybeans: 'Corn & soybeans', wheat: 'Corn & soybeans', pumpkins: 'Field crops',
   vegetables: 'Greenhouses', flowers: 'Gardens', apples: 'Apple orchard', eggs: 'Chicken coop', honey: 'Honey production',
-  fish: 'Fishing', goods: 'Freewalker Goods',
+  fish: 'Fishing', goods: 'Freewalker Goods', lumber: 'Lumber', venison: 'Hunting',
 };
 
 /** Today's wholesale price for one unit at the county market. */
