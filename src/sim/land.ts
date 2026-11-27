@@ -270,7 +270,7 @@ hooks.day.push((s, ev) => {
         s.events.push({ kind: 'renewal', until: s.time.day + 3, data: { tenant: l.tenant, name: l.name, rate: Math.round(l.ratePerAcre * (1.1 + nextRandom(s) * 0.1)), seasons: Math.max(1, leaseSeasons(l)), tiles: l.tiles.join(',') } });
         ev.push({ type: 'toast', text: `${l.name} wants to renew their lease at a higher rate` });
       } else ev.push({ type: 'toast', text: `Lease with ${l.name} is over` });
-    } else if (l.dir === 'out' && chance(s, 0.004)) {
+    } else if (l.dir === 'out' && !s.flags.calm && chance(s, 0.004)) {
       // A tenant leaves early and pays half a season to get out.
       earn(s, Math.round(l.ratePerAcre * l.tiles.length * 0.5), 'Leased land');
       endLease(s, l, 'tenant left early');
