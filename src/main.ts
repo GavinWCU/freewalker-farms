@@ -6,6 +6,7 @@ import { IdbBackend, SaveManager, SLOTS } from './save/saves';
 import { Game } from './ui/game';
 import { ask, askYes, btn, h, money, pickFile, tell } from './ui/dom';
 import './ui/features';
+import { maybeShowPatchNotes } from './ui/patchnotes';
 
 document.title = GAME_NAME;
 const app = document.getElementById('app')!;
@@ -55,7 +56,7 @@ async function showTitle() {
         if (r.fellBack) game!.toast('Your newest save could not be read — loaded the previous autosave.', 'bad');
       } catch (e) { await tell((e as Error).message); return; }
     }
-    game!.paused = false; close(); maybeTip();
+    game!.paused = false; close(); maybeTip(); maybeShowPatchNotes(game!, true);
   };
   const fresh = async (slot: number) => {
     const name = (await ask('Name your farm:', { title: '🌾 New farm', value: SHORT_NAME, ok: 'Start farming' }))?.trim();
@@ -63,7 +64,7 @@ async function showTitle() {
     const s = newGame((Date.now() % 1_000_000) + slot * 7919, name.slice(0, 40));
     start(s, slot, false);
     await game!.save();
-    close(); maybeTip();
+    close(); maybeTip(); maybeShowPatchNotes(game!, list.some((m) => m));
   };
 
   const cont = latest >= 0 ? list[latest]! : null;

@@ -30,6 +30,10 @@ export type Mode =
 export class Game {
   view: View;
   paused = false;
+  /** Fast forward: how many times faster than normal the clock runs (1, 2, 5 or 10). */
+  speed = 1;
+  private speedBtn = h('button.chip.speed', { 'data-testid': 'speed', title: 'Fast forward (F)', 'aria-label': 'Fast forward' }, '⏵ 1×');
+  private lastAutosave = 0;
   dirty = true;
   mode: Mode = null;
   selected: { x: number; y: number } | null = null;
@@ -86,6 +90,7 @@ export class Game {
       else openMenu(this);
     }
     if (k === 'e') this.interact();
+    if (k === 'f') this.cycleSpeed();
   };
 
   destroy() {
@@ -110,11 +115,12 @@ export class Game {
     this.last = now;
     if (!this.paused) {
       this.tickInput(dt);
-      this.handle(sim.advance(this.s, dt * sim.GAME_MINUTES_PER_REAL_SECOND));
+      this.handle(sim.advance(this.s, dt * sim.GAME_MINUTES_PER_REAL_SECOND * this.speed));
     }
     const hour = this.s.time.day * 24 + Math.floor(this.s.time.minute / 60);
     if (hour !== this.lastHour) {
-      if (this.lastHour >= 0) { this.dirty = true; this.save(); } // hourly autosave
+      // Hourly autosave, but at most every 15 real seconds so fast forward doesn't hammer storage.
+      if (this.lastHour >= 0) { this.dirty = true; if (now - this.lastAutosave > 15000) { this.lastAutosave = now; this.save(); } }
       this.lastHour = hour;
     }
     if (this.dirty) { this.dirty = false; this.view.sync(this.s); this.rebuildBubbles(); if (this.sheet && this.selected) this.openTile(this.selected, true); }
@@ -125,6 +131,17 @@ export class Game {
   };
 
   // ── test & debug helpers (used by Playwright) ────────────────────────────
+  static SPEEDS = [1, 2, 5, 10];
+  cycleSpeed() {
+    const S = Game.SPEEDS;
+    this.setSpeed(S[(S.indexOf(this.speed) + 1) % S.length]);
+  }
+  setSpeed(n: number) {
+    this.speed = n;
+    this.speedBtn.textContent = n === 1 ? '⏵ 1×' : `⏩ ${n}×`;
+    this.speedBtn.classList.toggle('on', n > 1);
+  }
+
   fastForward(minutes: number) { this.handle(sim.advance(this.s, minutes)); this.dirty = true; }
   tileScreen(x: number, y: number) { const p = this.view.toScreen(x + 0.5, this.view.ground(x + 0.5, y + 0.5), y + 0.5); return { x: p.x, y: p.y }; }
 
@@ -297,6 +314,8 @@ export class Game {
   // ── HUD ───────────────────────────────────────────────────────────────────
   private buildHud() {
     const H = this.hud;
+    this.speedBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.speedBtn.addEventListener('click', (e) => { e.stopPropagation(); this.cycleSpeed(); });
     const hud = h('div.hud',
       {},
       h('div.chip', { 'data-testid': 'hud-money' }, '💰', H.money),
@@ -305,6 +324,7 @@ export class Game {
       h('div.chip', { 'data-testid': 'hud-level' }, '⭐', H.level, h('div.xpbar', {}, H.xp)),
       h('div.chip.hide-phone', {}, '🏕️', H.camp),
       ...hudItems.map((f) => f(this)),
+      this.speedBtn,
       H.saved,
     );
     const toolbar = h('div.toolbar',

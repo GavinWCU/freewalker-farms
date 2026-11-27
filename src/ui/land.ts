@@ -36,6 +36,14 @@ tileSections.push((g, i) => {
   if (t.owned && !lease && !t.b && !t.f?.crop && !t.landmark) {
     out.push(h('div.row', {}, btn('📜 Lease out…', () => openLeaseDialog(g, i), 'small grey', { 'data-testid': 'lease-out' })));
   }
+  if (t.owned && !t.home) {
+    const why = sim.cantSell(s, i), price = sim.salePrice(s, i);
+    out.push(h('div.row', {}, btn(`💲 Sell this acre ${money(price)}`, async () => {
+      const crop = t.f?.crop ? ' The crop growing on it goes with the land.' : '';
+      if (await askYes(`Sell this acre for ${money(price)}? That's market value minus 10% closing costs.${crop}`, 'Sell')) { const ev: SimEvent[] = []; g.act(sim.sellParcel(s, i, ev), ev); }
+    }, why ? 'small grey' : 'small', { 'data-testid': 'sell-parcel', disabled: why ? true : undefined, title: why ?? '' })));
+    if (why) out.push(h('p.muted', {}, `Can't sell: ${why.toLowerCase()}.`));
+  }
   return out;
 });
 

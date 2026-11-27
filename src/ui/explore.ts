@@ -79,7 +79,7 @@ hudItems.push((g) => {
 tileSections.push((g, i) => {
   const spot = sim.fishingSpot(g.s, i);
   if (!spot) return [];
-  return [h('div.row', {}, btn(`🎣 Go fishing${spot === 'dock' ? ' from the dock' : ''}`, () => openFishing(g, i), 'blue', { 'data-testid': 'go-fishing' }))];
+  return [h('div.row', {}, btn(`🎣 Go ${sim.seasonOf(g.s.time.day) === 3 ? 'ice ' : ''}fishing${spot === 'dock' ? ' from the dock' : ''}`, () => openFishing(g, i), 'blue', { 'data-testid': 'go-fishing' }))];
 });
 
 export function openFishing(g: Game, i: number) {
@@ -110,7 +110,7 @@ export function openFishing(g: Game, i: number) {
   };
   const reelBtn = btn('🎣 Reel in!', reel, 'gold', { 'data-testid': 'fish-reel', style: 'width:100%' });
   const recs = Object.keys(s.fishing.records).length;
-  modal(g.ui, '🎣 Lake Stillwater', [h('p.muted', {}, `${s.fishing.caught} fish caught · ${recs} species on your record board · bigger fish bite from the dock, catfish at night`), bar, reelBtn, result], () => cancelAnimationFrame(raf), 'fishing');
+  modal(g.ui, sim.seasonOf(s.time.day) === 3 ? '🎣 Ice fishing on Lake Stillwater' : '🎣 Lake Stillwater', [h('p.muted', {}, `${s.fishing.caught} fish caught · ${recs} species on your record board · bigger fish bite from the dock, catfish at night`), bar, reelBtn, result], () => cancelAnimationFrame(raf), 'fishing');
 }
 
 // ── finds, Ace's gifts ──────────────────────────────────────────────────────

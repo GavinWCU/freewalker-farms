@@ -3,7 +3,7 @@ import { test as base, expect, type Page } from '@playwright/test';
 /** Functional tests run in low-quality mode: software WebGL in CI is slow. */
 export const test = base.extend({
   page: async ({ page }, use) => {
-    await page.addInitScript(() => localStorage.setItem('ff-low', '1'));
+    await page.addInitScript(() => { localStorage.setItem('ff-low', '1'); if (!localStorage.getItem('ff-notes-seen')) localStorage.setItem('ff-notes-seen', '999'); });
     await use(page);
   },
 });

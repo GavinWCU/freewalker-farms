@@ -154,7 +154,7 @@ hooks.hour.push((s, ev) => {
 export const FISH: { id: string; name: string; min: number; max: number; weight: number; dock?: boolean; seasons?: number[]; night?: boolean }[] = [
   { id: 'bluegill', name: 'Bluegill', min: 0.2, max: 1.2, weight: 30 },
   { id: 'perch', name: 'Yellow perch', min: 0.3, max: 1.5, weight: 22 },
-  { id: 'crappie', name: 'Crappie', min: 0.4, max: 2.5, weight: 18, seasons: [0, 2] },
+  { id: 'crappie', name: 'Crappie', min: 0.4, max: 2.5, weight: 18, seasons: [0, 2, 3] },
   { id: 'bass', name: 'Largemouth bass', min: 1, max: 9, weight: 14 },
   { id: 'catfish', name: 'Channel catfish', min: 2, max: 25, weight: 10, night: true },
   { id: 'walleye', name: 'Walleye', min: 1.5, max: 11, weight: 8, dock: true },
@@ -174,12 +174,13 @@ export function fishingSpot(s: GameState, i: number): 'dock' | 'shore' | null {
 export function castLine(s: GameState, i: number, skill: number, ev: SimEvent[] = []): Result & { fish?: string; lb?: number; record?: boolean } {
   const spot = fishingSpot(s, i);
   if (!spot) return no('Fish from your shore or a dock');
-  if (seasonOf(s.time.day) === 3) return no('The lake is iced over until spring');
   if (skill < 0.15 || nextRandom(s) > 0.4 + skill * 0.6) return { ...no('It got away!'), fish: undefined };
   const night = s.time.minute < 6 * 60 || s.time.minute > 20 * 60;
   const season = seasonOf(s.time.day);
   const pool = FISH.filter((f) => (!f.seasons || f.seasons.includes(season)));
-  const w = pool.map((f) => f.weight * (f.dock ? (spot === 'dock' ? 2 : 0.3) : 1) * (f.night && night ? 3 : 1));
+  // Winter is ice fishing: perch, bluegill, crappie, walleye and pike bite; bass and catfish are sluggish.
+  const ice = season === 3;
+  const w = pool.map((f) => f.weight * (f.dock ? (spot === 'dock' || ice ? 2 : 0.3) : 1) * (f.night && night ? 3 : 1) * (ice && (f.id === 'bass' || f.id === 'catfish') ? 0.25 : 1));
   let r = nextRandom(s) * w.reduce((a, b) => a + b, 0), k = 0;
   while (r > w[k]) r -= w[k++];
   const f = pool[k];

@@ -64,6 +64,51 @@ export function buyParcel(s: GameState, i: number, ev?: SimEvent[]): Result {
   return ok(`Bought 1 acre for $${price.toLocaleString()}`);
 }
 
+// ── selling land ────────────────────────────────────────────────────────────
+/** Share of market value you keep when selling (the rest is closing costs). */
+export const SALE_SHARE = 0.9;
+
+export function salePrice(s: GameState, i: number) {
+  return Math.round((acreValue(s, i) * SALE_SHARE) / 10) * 10;
+}
+
+/** Why this acre can't be sold, or null if it can. */
+export function cantSell(s: GameState, i: number): string | null {
+  const t = s.tiles[i];
+  if (!t.owned || !isLand(t)) return "You don't own this";
+  if (t.home) return 'The original 80 stays in the family';
+  if (t.b) return 'Remove the building first';
+  if (t.lease) return 'End the lease first';
+  // Everything else you own must stay connected to the home 80.
+  const seen = new Set<number>([i]);
+  const queue: number[] = [];
+  s.tiles.forEach((u, k) => { if (u.home && u.owned && isLand(u)) { seen.add(k); queue.push(k); } });
+  while (queue.length) {
+    for (const n of touching(s, queue.pop()!)) {
+      if (!seen.has(n) && s.tiles[n].owned && isLand(s.tiles[n])) { seen.add(n); queue.push(n); }
+    }
+  }
+  if (s.tiles.some((u, k) => u.owned && isLand(u) && !seen.has(k))) return 'Selling this would cut off other land you own';
+  return null;
+}
+
+export function sellParcel(s: GameState, i: number, ev?: SimEvent[]): Result {
+  const why = cantSell(s, i);
+  if (why) return no(why);
+  const price = salePrice(s, i);
+  const t = s.tiles[i];
+  t.owned = false;
+  t.f = undefined;
+  t.path = undefined;
+  t.fence = undefined;
+  s.landBought = Math.max(0, s.landBought - 1);
+  earn(s, price, 'Land sales');
+  stat(s, 'acresSold');
+  log(s, `Sold an acre for $${price.toLocaleString()}.`);
+  ev?.push({ type: 'sold', x: xy(s, i).x, y: xy(s, i).y });
+  return ok(`Sold 1 acre for $${price.toLocaleString()}`);
+}
+
 /** Buy an entire auction block in one go (tiles become buyable as the block grows). */
 export function buyAuction(s: GameState, ev?: SimEvent[]): Result {
   const a = s.auction;
