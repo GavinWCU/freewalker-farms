@@ -1,6 +1,17 @@
 import * as sim from '../sim';
 import type { GameState, SimEvent, PathKind } from '../sim';
-import { View } from '../render/view';
+import { View, type Quality } from '../render/view';
+
+export const QUALITIES: Quality[] = ['battery', 'high', 'low'];
+/** Saved graphics setting. Older saves of the 'Lower quality' switch (ff-low) still count. */
+export function getQuality(): Quality {
+  try {
+    const q = localStorage.getItem('ff-quality') as Quality | null;
+    if (q && QUALITIES.includes(q)) return q;
+    return localStorage.getItem('ff-low') === '1' ? 'low' : 'battery';
+  } catch { return 'battery'; }
+}
+export function setQualitySetting(q: Quality) { try { localStorage.setItem('ff-quality', q); localStorage.removeItem('ff-low'); } catch { /* private mode */ } }
 import { attachControls } from '../render/controls';
 import type { SaveManager } from '../save/saves';
 import { btn, h, money } from './dom';
@@ -46,7 +57,7 @@ export class Game {
     this.ui = h('div', { id: 'ui' });
     root.append(world, this.ui);
     this.view = new View(world);
-    this.view.setQuality(localStorage.getItem('ff-low') === '1');
+    this.view.setQuality(getQuality());
     this.view.sync(s);
     this.view.focus(s.player.x + 1, s.player.y + 1);
     this.buildHud();
@@ -87,8 +98,15 @@ export class Game {
   }
 
   // ── main loop ─────────────────────────────────────────────────────────────
+  private lastDraw = -1e9;
   private loop = (now: number) => {
-    const dt = Math.min(0.25, (now - this.last) / 1000); // clamp: a backgrounded tab must not jump the sim
+    this.raf = requestAnimationFrame(this.loop);
+    // Battery: the screen may refresh 60-120 times a second, but we only do work at the
+    // chosen frame rate, and barely at all while a menu or the title screen covers the farm.
+    const covered = this.paused || !!this.ui.querySelector('.modal-bg');
+    if (now - this.lastDraw < (covered ? 500 : 1000 / this.view.fps) - 4) return;
+    this.lastDraw = now;
+    const dt = Math.min(0.6, (now - this.last) / 1000); // clamp: a backgrounded tab must not jump the sim
     this.last = now;
     if (!this.paused) {
       this.tickInput(dt);
@@ -104,7 +122,6 @@ export class Game {
     this.updateHud();
     this.placeBubbles();
     this.updateTint();
-    this.raf = requestAnimationFrame(this.loop);
   };
 
   // ── test & debug helpers (used by Playwright) ────────────────────────────

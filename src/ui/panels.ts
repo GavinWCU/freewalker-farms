@@ -1,7 +1,7 @@
 import * as sim from '../sim';
 import { BASECAMP_NAMES } from '../sim/content/buildings';
 import { btn, download, h, modal, money, pickFile } from './dom';
-import type { Game } from './game';
+import { getQuality, QUALITIES, setQualitySetting, type Game } from './game';
 import { menuSections } from './registry';
 
 export function openBuildMenu(g: Game) {
@@ -62,7 +62,8 @@ export function openInventory(g: Game) {
 
 export function openMenu(g: Game) {
   g.paused = true;
-  const low = localStorage.getItem('ff-low') === '1';
+  const q = getQuality();
+  const QNAME = { battery: '🔋 Graphics: Battery saver', high: '✨ Graphics: High quality', low: '🐢 Graphics: Lowest' };
   const body = [
     h('p.muted', {}, `${g.s.farmName} · slot ${g.slot + 1} · ${sim.dateLabel(g.s.time.day)}`),
     h('div.row', {},
@@ -79,7 +80,7 @@ export function openMenu(g: Game) {
       }, 'small blue'),
     ),
     h('div.row', {},
-      btn(low ? '✨ Higher quality' : '🔋 Lower quality (faster)', () => { localStorage.setItem('ff-low', low ? '0' : '1'); g.view.setQuality(!low); g.dirty = true; m.close(); }, 'small grey', { 'data-testid': 'quality' }),
+      btn(QNAME[q], () => { const next = QUALITIES[(QUALITIES.indexOf(q) + 1) % QUALITIES.length]; setQualitySetting(next); g.view.setQuality(next); g.dirty = true; m.close(); g.toast(`${QNAME[next]}${next === 'high' ? ' — uses more battery' : ''}`); }, 'small grey', { 'data-testid': 'quality', title: 'Tap to switch: Battery saver → High quality → Lowest' }),
       btn('🏠 Switch farm / title', async () => { await g.save(); g.onExit(); }, 'small grey'),
     ),
     ...menuSections.flatMap((f) => f(g, () => m.close())),

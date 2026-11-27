@@ -19,6 +19,8 @@ const COLORS = {
 
 export interface ScreenPoint { x: number; y: number; visible: boolean }
 
+export type Quality = 'low' | 'battery' | 'high';
+
 export class View {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -60,8 +62,10 @@ export class View {
   facing = 0;
 
   constructor(private host: HTMLElement) {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Retina screens hide jagged edges anyway, so skip the costly edge smoothing there.
+    // 'default' power lets the device pick its efficient GPU mode instead of the hungriest one.
+    this.renderer = new THREE.WebGLRenderer({ antialias: window.devicePixelRatio < 2, powerPreference: 'default' });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -167,11 +171,23 @@ export class View {
   }
   tileTop(s: GameState, x: number, y: number) { return Math.max(this.ground(x + 0.5, y + 0.5), s.tiles[y * s.w + x].t === 'water' ? -0.08 : -1); }
 
-  setQuality(low: boolean) {
+  /** Frames per second to draw: 60 on High quality, 30 otherwise (half the battery). */
+  fps = 30;
+  /**
+   * low: no shadows, normal sharpness, fewer trees.
+   * battery (default): crisp-enough 1.5x sharpness, simpler shadows, 30 fps.
+   * high: full Retina sharpness, soft detailed shadows, 60 fps.
+   */
+  setQuality(q: Quality) {
+    const low = q === 'low';
     this.low = low;
+    this.fps = q === 'high' ? 60 : 30;
     this.renderer.shadowMap.enabled = !low;
+    this.renderer.shadowMap.type = q === 'high' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     this.sun.castShadow = !low;
-    this.renderer.setPixelRatio(low ? 1 : Math.min(window.devicePixelRatio, 2));
+    const size = q === 'high' ? 2048 : 1024;
+    if (this.sun.shadow.mapSize.x !== size) { this.sun.shadow.mapSize.set(size, size); this.sun.shadow.map?.dispose(); this.sun.shadow.map = null; }
+    this.renderer.setPixelRatio(low ? 1 : Math.min(window.devicePixelRatio, q === 'high' ? 2 : 1.5));
     this.scene.traverse((o) => { if ((o as THREE.Mesh).material) ((o as THREE.Mesh).material as THREE.Material).needsUpdate = true; });
     this.resize();
   }
